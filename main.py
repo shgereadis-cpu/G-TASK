@@ -17,10 +17,9 @@ load_dotenv() # በ Replit ላይ አውቶማቲክ ይሰራል
 app = Flask(__name__)
 app.secret_key = os.urandom(24) 
 
-# Database Configuration (Neon/PostgreSQL)
+# Database Configuration (Neon/PostgreSQL or SQLite fallback)
 # የ DATABASE_URL ሚስጥር ከ Replit Secrets ይነበባል
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///g_task_manager.db' # ለ SQLite መሞከሪያ
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///g_task_manager.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -34,7 +33,7 @@ class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
-    password_hash = db.Column(db.String(128), nullable=False)
+    password_hash = db.Column(db.String(256), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
     total_earned = db.Column(db.Float, default=0.0)
     pending_payout = db.Column(db.Float, default=0.0)
