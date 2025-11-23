@@ -25,7 +25,10 @@ app.secret_key = secret_key
 
 # Database Configuration (Neon/PostgreSQL or SQLite fallback)
 # የ DATABASE_URL ሚስጥር ከ Replit Secrets ይነበባል
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///g_task_manager.db')
+database_url = os.environ.get('DATABASE_URL', 'sqlite:///g_task_manager.db')
+# Remove extra quotes and fix HTML encoding if present
+database_url = database_url.strip("'\"").replace('&amp;', '&')
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
