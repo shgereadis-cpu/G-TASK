@@ -1,0 +1,198 @@
+{% include 'header.html' %}
+
+<div class="dashboard-grid">
+    <aside class="sidebar-panel">
+        <div class="user-profile">
+            <i class="fas fa-user-circle profile-icon"></i>
+            <h3>እንኳን ደህና መጡ፣ {{ user.username }}!</h3>
+            <p style="color: var(--accent-color); font-weight: 700;">
+                <i class="fas fa-certificate"></i> ሰራተኛ (Worker)
+            </p>
+        </div>
+
+        <div class="balance-summary">
+            <h4><i class="fas fa-wallet"></i> የገንዘብ ሁኔታዎ</h4>
+            <div class="stat-item earned">
+                <span>አጠቃላይ ገቢ:</span>
+                <strong>$ {{ "%.2f"|format(user.total_earned) }}</strong>
+            </div>
+            <div class="stat-item pending">
+                <span>ሊወጣ የሚችል ቀሪ ሂሳብ:</span>
+                <strong>$ {{ "%.2f"|format(user.pending_payout) }}</strong>
+            </div>
+            <a href="{{ url_for('payout_request') }}" class="btn success btn-full" style="margin-top: 15px;">
+                <i class="fas fa-paper-plane"></i> ገንዘብ ይጠይቁ
+            </a>
+        </div>
+
+        <div class="quick-links">
+            <h4><i class="fas fa-link"></i> ፈጣን አገናኞች</h4>
+            <a href="#active-task">የአሁኑ ስራዬ</a>
+            <a href="#task-history">የሥራ ታሪክ</a>
+            <a href="{{ url_for('faq') }}">የአገልግሎት መመሪያ</a>
+        </div>
+    </aside>
+
+    <section class="main-content">
+        <h2><i class="fas fa-tasks"></i> የሥራ ማዕከል</h2>
+        
+        <div id="active-task" class="card task-block">
+            {% if current_task %}
+                <h3><i class="fas fa-cogs"></i> የአሁኑ ሥራዎ</h3>
+                <div class="task-details">
+                    <p>
+                        <strong>የጂሜል ስም:</strong> <span class="highlight-info">{{ current_task.gmail_username }}</span>
+                    </p>
+                    <p>
+                        <strong>የይለፍ ቃል:</strong> <span class="highlight-danger">{{ current_task.gmail_password }}</span>
+                    </p>
+                    <p class="instruction">
+                        <i class="fas fa-exclamation-triangle"></i> ወደ gmail.com በመሄድ በዚህ መረጃ አዲስ አካውንት ይፍጠሩ።
+                    </p>
+                </div>
+                
+                <form method="POST" action="{{ url_for('submit_task', task_id=current_task.id) }}" class="submission-form">
+                    <label for="completion_code">ከቦቱ ያገኙትን የመጨረሻ ማረጋገጫ ኮድ ያስገቡ:</label>
+                    <input type="text" id="completion_code" name="completion_code" required 
+                           placeholder="ኮዱን ያስገቡ">
+                    <button type="submit" class="btn success btn-full">
+                        <i class="fas fa-check"></i> ሥራዬን አስረክብና $0.10 ተቀበል
+                    </button>
+                </form>
+
+            {% elif available_task %}
+                <h3><i class="fas fa-briefcase"></i> አዲስ ሥራ ይውሰዱ</h3>
+                <p>አንድ ንቁ የጂሜይል አካውንት ፈጠራ ሥራ በክምችት ውስጥ አለ።</p>
+                <form method="POST" action="{{ url_for('take_task') }}">
+                    <button type="submit" class="btn primary btn-full">
+                        <i class="fas fa-arrow-alt-circle-right"></i> ሥራውን ይውሰዱ (Take Task)
+                    </button>
+                </form>
+            {% else %}
+                <h3><i class="fas fa-hourglass-half"></i> አዲስ ሥራ በመጠበቅ ላይ</h3>
+                <p>በአሁኑ ሰዓት በክምችት ውስጥ ምንም የሚሠራ ሥራ የለም። እባክዎ ትንሽ ቆይተው ይመለሱ።</p>
+                <div class="progress-bar">
+                    <div class="bar-fill" style="width: 0%;"></div>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div id="task-history" class="card task-history-block">
+            <h3><i class="fas fa-history"></i> የሥራ ታሪክዎ</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>የጂሜል ስም</th>
+                        <th>የተመደበበት ቀን</th>
+                        <th>ሁኔታ</th>
+                        <th>ክፍያ ($)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in my_tasks %}
+                    <tr>
+                        <td>{{ task.gmail_username }}</td>
+                        <td>{{ task.date_assigned[:10] }}</td>
+                        <td>
+                            <span class="status-tag {{ task.status|lower }}">
+                                {% if task.status == 'PENDING' %}
+                                    <i class="fas fa-spinner fa-spin"></i> قيد المراجعة
+                                {% elif task.status == 'VERIFIED' %}
+                                    <i class="fas fa-check-circle"></i> የተረጋገጠ
+                                {% else %}
+                                    {{ task.status }}
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            {% if task.status == 'VERIFIED' %}
+                                $0.10
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" style="text-align: center;">ገና ምንም ሥራ አልሰሩም።</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </section>
+</div>
+
+
+{% include 'footer.html' %}
+
+<style>
+/* --- Dashboard Layout --- */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 30px;
+    margin-top: 30px;
+}
+
+@media (max-width: 900px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr; /* ለትንንሽ ስክሪኖች በአቀባዊ ይደረደራል */
+    }
+    .sidebar-panel {
+        order: -1; /* ሳይድባሩ መጀመሪያ እንዲመጣ */
+    }
+}
+
+/* --- Sidebar Panel --- */
+.sidebar-panel {
+    background: var(--white);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: var(--shadow-md);
+    height: fit-content;
+}
+
+.user-profile {
+    text-align: center;
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+}
+.profile-icon {
+    font-size: 4em;
+    color: var(--secondary-color);
+    margin-bottom: 10px;
+}
+.user-profile h3 {
+    margin-bottom: 5px;
+    font-size: 1.5em;
+}
+
+.balance-summary h4, .quick-links h4 {
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--accent-color);
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+    font-size: 1.1em;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--border-light);
+    font-size: 1.1em;
+}
+.stat-item strong {
+    font-weight: 800;
+}
+.earned strong { color: var(--accent-color); }
+.pending strong { color: var(--warning-color); }
+
+.quick-links a {
+    display: block;
+    padding: 8px 0;
+    font-weight: 500;
+    border-bottom:

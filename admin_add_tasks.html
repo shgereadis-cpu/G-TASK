@@ -1,0 +1,85 @@
+{% include 'header.html' %}
+
+<div class="form-container" style="max-width: 800px; margin-top: 30px;">
+    <h2>
+        <i class="fas fa-plus-circle" style="color: var(--success-color);"></i>
+        የሥራ ክምችት ማስገቢያ
+    </h2>
+    <p style="text-align: center; color: var(--text-light); margin-bottom: 25px;">
+        እባክዎ ከቴሌግራም ቦቱ የተቀበሉትን የጂሜይል ስም እና የይለፍ ቃል ዝርዝር ያስገቡ።
+    </p>
+
+    <div class="guidance-box">
+        <h4><i class="fas fa-info-circle"></i> የአስገቢያ ቅርጸት መመሪያ</h4>
+        <p>እያንዳንዱ ግቤት በአዲስ መስመር ላይ መሆን አለበት፣ እና ስሙና የይለፍ ቃሉ በ**ኮሎን (Colon)** መለየት አለባቸው።</p>
+        <p class="format-example">
+            **ቅርጸት:** <code>gmail_username:gmail_password</code>
+        </p>
+        <p class="example-text">
+            **ለምሳሌ:**<br>
+            <code>UserA123:Pass1234</code><br>
+            <code>EtiopianJob:Secure99</code><br>
+            <code>NewAccount:MySecret!</code>
+        </p>
+    </div>
+
+    <form method="POST">
+        <label for="task_data">
+            <i class="fas fa-database"></i> የጂሜይል መረጃ (በብዛት)
+        </label>
+        <textarea id="task_data" name="task_data" rows="15" required 
+                  placeholder="የጂሜይል መረጃዎችን በቅርጸቱ ያስገቡ (በአንድ መስመር አንድ መረጃ)..."></textarea>
+
+        <button type="submit" class="btn success">
+            <i class="fas fa-upload"></i> {{ request.form.get('task_data')|length if request.form.get('task_data') else 'አስቀምጥና ወደ ክምችት ጨምር' }}
+        </button>
+    </form>
+
+    <div style="margin-top: 25px; text-align: center;">
+        <a href="{{ url_for('admin_dashboard') }}" style="font-weight: 600; color: var(--secondary-color);">
+            <i class="fas fa-arrow-left"></i> ወደ አስተዳዳሪ ዳሽቦርድ ተመለስ
+        </a>
+    </div>
+</div>
+
+{% include 'footer.html' %}
+
+<style>
+.guidance-box {
+    background-color: var(--cream-bg);
+    border: 1px solid var(--border-light);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    border-left: 5px solid var(--warning-color);
+}
+.guidance-box h4 {
+    color: var(--primary-color);
+    margin-bottom: 10px;
+    font-size: 1.2em;
+}
+.format-example {
+    font-family: 'Courier New', Courier, monospace;
+    background-color: var(--white);
+    padding: 8px;
+    border-radius: 4px;
+    margin: 10px 0;
+    display: inline-block;
+    color: var(--danger-color);
+    font-size: 1.1em;
+}
+.example-text {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #f7f7f7;
+    border-radius: 4px;
+    white-space: pre-wrap;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9em;
+}
+
+textarea {
+    resize: vertical;
+}
+
+</style>

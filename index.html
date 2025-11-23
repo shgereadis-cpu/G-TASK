@@ -1,0 +1,79 @@
+{% include 'header.html' %}
+
+<div class="hero">
+    <h1>
+        <i class="fas fa-hand-holding-usd" style="color: var(--accent-color);"></i> 
+        G-Task Manager: አሁን ገንዘብ ይስሩ
+    </h1>
+    <p>
+        በቀላል የጂሜይል አካውንት ፈጠራ ስራዎች በፍጥነት $0.10 በአካውንት ይክፈሉ። ስራዎችዎ በቅጽበት ተመድበውልዎታል!
+    </p>
+
+    <div class="hero-actions">
+        {% if session.get('user_id') %}
+            <a href="{{ url_for('dashboard') }}" class="btn success">
+                <i class="fas fa-play-circle"></i> ሥራዎን ይጀምሩ!
+            </a>
+        {% else %}
+            <a href="{{ url_for('signup') }}" class="btn success">
+                <i class="fas fa-user-plus"></i> ይመዝገቡና ይጀምሩ
+            </a>
+            <a href="{{ url_for('login') }}" class="btn primary">
+                <i class="fas fa-sign-in-alt"></i> ቀደም ብለው ተመዝግበዋል? ይግቡ
+            </a>
+        {% endif %}
+    </div>
+
+    <div class="feature-list">
+        <h2>ለምን G-Task Manager?</h2>
+        
+        <div class="feature-cards">
+            <div class="card">
+                <i class="fas fa-dollar-sign"></i>
+                <h3>ፈጣን ክፍያ</h3>
+                <p>በእያንዳንዱ የተጠናቀቀ ሥራ $0.10 ገቢ ያድርጉ። ገቢዎ ወዲያውኑ ይሰላል።</p>
+            </div>
+            <div class="card">
+                <i class="fas fa-clock"></i>
+                <h3>ቀላል እና ፈጣን</h3>
+                <p>ሥራዎቹ ቀላል በመሆናቸው በደቂቃዎች ውስጥ ከብዙ ሥራዎች ገቢ ማግኘት ይችላሉ።</p>
+            </div>
+            <div class="card">
+                <i class="fas fa-shield-alt"></i>
+                <h3>አስተማማኝ ስርዓት</h3>
+                <p>የእኛ ሲስተም ሥራዎችን በአስተማማኝ ሁኔታ በማከፋፈል ክፍያዎትን ያረጋግጣል።</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'footer.html' %}
+
+<style>
+.feature-list {
+    margin-top: 60px;
+    padding-top: 40px;
+    border-top: 1px solid var(--border-light);
+}
+
+.feature-list h2 {
+    font-size: 2em;
+    color: var(--secondary-color);
+    margin-bottom: 30px;
+}
+
+.feature-cards {
+    display: flex;
+    justify-content: space-around;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.card {
+    background: var(--white);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: var(--shadow-light);
+    width: 30%;
+    min-width: 280px;
+    text-align: center;

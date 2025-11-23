@@ -1,0 +1,127 @@
+{% include 'header.html' %}
+
+<div class="admin-verify-container">
+    <h2>
+        <i class="fas fa-check-double" style="color: var(--danger-color);"></i>
+        የገቡ ሥራዎች ማረጋገጫ
+    </h2>
+    <p class="description-text">
+        እነዚህ ሰራተኞች አጠናቅቀው ያስገቧቸው ሥራዎች ናቸው። እባክዎ የማረጋገጫ ኮዱን ከዋናው ቦት ጋር በማወዳደር ትክክለኛነቱን ያረጋግጡ።
+    </p>
+
+    {% if submitted_tasks %}
+        <div class="tasks-list">
+            {% for task in submitted_tasks %}
+            <div class="task-card">
+                <div class="task-header">
+                    <span class="worker-info">
+                        <i class="fas fa-user-circle"></i> ሰራተኛ: <strong>{{ task.worker_username }}</strong>
+                    </span>
+                    <span class="task-date">
+                        <i class="fas fa-clock"></i> የቀረበበት ቀን: {{ task.date_completed[:16] }}
+                    </span>
+                </div>
+                
+                <div class="task-details-verify">
+                    <div class="detail-item">
+                        <span class="label">የጂሜይል ስም:</span>
+                        <code class="value">{{ task.gmail_username }}</code>
+                    </div>
+                    <div class="detail-item code-item">
+                        <span class="label highlight-label"><i class="fas fa-lock"></i> የተሰጠ የማረጋገጫ ኮድ:</span>
+                        <code class="value highlight-value">{{ task.completion_code }}</code>
+                    </div>
+                </div>
+
+                <div class="task-actions">
+                    <form method="POST" action="{{ url_for('admin_action_task', task_id=task.task_id, action='verify') }}" style="display: inline-block;">
+                        <button type="submit" class="btn success btn-action">
+                            <i class="fas fa-check"></i> አረጋግጥ ($0.10 ክፈል)
+                        </button>
+                    </form>
+
+                    <form method="POST" action="{{ url_for('admin_action_task', task_id=task.task_id, action='reject') }}" style="display: inline-block;">
+                        <button type="submit" class="btn danger btn-action">
+                            <i class="fas fa-times"></i> ሥራውን ውድቅ አድርግ
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="info-message" style="text-align: center; font-size: 1.2em;">
+            <i class="fas fa-box-open"></i> በአሁኑ ሰዓት ያልተረጋገጠ ሥራ የለም!
+        </div>
+    {% endif %}
+
+    <div style="margin-top: 30px; text-align: center;">
+        <a href="{{ url_for('admin_dashboard') }}" style="font-weight: 600; color: var(--secondary-color);">
+            <i class="fas fa-arrow-left"></i> ወደ አስተዳዳሪ ዳሽቦርድ ተመለስ
+        </a>
+    </div>
+</div>
+
+{% include 'footer.html' %}
+
+<style>
+.admin-verify-container {
+    max-width: 1000px;
+    margin: 30px auto;
+}
+.description-text {
+    text-align: center;
+    color: var(--text-light);
+    margin-bottom: 30px;
+}
+
+.tasks-list {
+    display: grid;
+    gap: 20px;
+}
+
+.task-card {
+    background: var(--white);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: var(--shadow-md);
+    border-left: 5px solid var(--danger-color); /* Pending verification */
+}
+
+.task-header {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    font-size: 0.95em;
+    color: var(--secondary-color);
+}
+.task-header i {
+    margin-right: 5px;
+}
+
+.task-details-verify {
+    padding: 15px 0;
+}
+.detail-item {
+    margin-bottom: 10px;
+}
+.label {
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-right: 15px;
+    display: inline-block;
+    min-width: 150px;
+}
+code.value {
+    font-family: 'Courier New', Courier, monospace;
+    background-color: var(--cream-bg);
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 1.1em;
+    color: var(--text-dark);
+}
+
+.code-item {
+    border: 1

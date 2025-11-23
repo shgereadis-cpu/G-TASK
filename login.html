@@ -1,0 +1,36 @@
+{% include 'header.html' %}
+
+<div class="form-container">
+    <h2>
+        <i class="fas fa-sign-in-alt" style="color: var(--primary-color);"></i>
+        ወደ መለያዎ ይግቡ
+    </h2>
+    <p style="text-align: center; color: var(--text-light); margin-bottom: 25px;">
+        ሥራዎችን ለመውሰድ እና ገቢዎን ለመከታተል ይግቡ።
+    </p>
+
+    <form method="POST">
+        <label for="username">
+            <i class="fas fa-user"></i> የተጠቃሚ ስም:
+        </label>
+        <input type="text" id="username" name="username" required 
+               placeholder="የተጠቃሚ ስምዎን ያስገቡ">
+
+        <label for="password">
+            <i class="fas fa-lock"></i> የይለፍ ቃል:
+        </label>
+        <input type="password" id="password" name="password" required 
+               placeholder="የይለፍ ቃልዎን ያስገቡ">
+
+        <button type="submit" class="btn primary">
+            <i class="fas fa-lock-open"></i> ግባ
+        </button>
+    </form>
+
+    <p style="margin-top: 25px; text-align: center;">
+        ገና አልተመዘገቡም? 
+        <a href="{{ url_for('signup') }}" style="font-weight: 600;">እዚህ ይመዝገቡ</a>
+    </p>
+</div>
+
+{% include 'footer.html' %}

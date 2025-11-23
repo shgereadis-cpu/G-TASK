@@ -1,0 +1,169 @@
+{% include 'header.html' %}
+
+<div class="admin-dashboard-layout">
+    <div class="header-admin">
+        <i class="fas fa-user-shield"></i> አስተዳዳሪ የቁጥጥር ማዕከል
+        <p>የስራ ክምችትዎን እና የሰራተኞችን አፈጻጸም ያስተዳድሩ።</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card pending-tasks">
+            <i class="fas fa-list-check"></i>
+            <h3>ያልተረጋገጡ ሥራዎች</h3>
+            <p class="stat-number">{{ pending_tasks_count }}</p>
+            <a href="{{ url_for('admin_verify_tasks') }}" class="btn primary btn-small">አሁን ይገምግሙ</a>
+        </div>
+        
+        <div class="stat-card available-inv">
+            <i class="fas fa-box-open"></i>
+            <h3>የሚገኙ የጂሜይል ክምችቶች</h3>
+            <p class="stat-number">{{ total_inventory_count }}</p>
+            <a href="{{ url_for('admin_add_tasks') }}" class="btn success btn-small">አዲስ ያስገቡ</a>
+        </div>
+        
+        <div class="stat-card total-users">
+            <i class="fas fa-users"></i>
+            <h3>ጠቅላላ ሰራተኞች</h3>
+            <p class="stat-number">{{ total_users_count }}</p>
+            <a href="{{ url_for('admin_user_list') }}" class="btn secondary btn-small">የሰራተኞች ዝርዝር</a>
+        </div>
+    </div>
+
+    <div class="admin-sections">
+        
+        <div class="card admin-action-card">
+            <h4><i class="fas fa-plus-circle"></i> የሥራ ክምችት ማስገቢያ</h4>
+            <p>በብዛት የተገኙ የጂሜይል መረጃዎችን ወደ ክምችቱ ያስገቡ።</p>
+            <a href="{{ url_for('admin_add_tasks') }}" class="btn success btn-full">ወደ ማስገቢያ ገጽ ይሂዱ</a>
+        </div>
+
+        <div class="card admin-action-card">
+            <h4><i class="fas fa-shield-alt"></i> ሥራዎችን ማረጋገጥ</h4>
+            <p>ሰራተኞች ያቀረቧቸውን ሥራዎች ይፈትሹ እና ክፍያ ያረጋግጡ።</p>
+            <a href="{{ url_for('admin_verify_tasks') }}" class="btn primary btn-full">ማረጋገጫ ይጀምሩ</a>
+        </div>
+
+        <div class="card admin-action-card">
+            <h4><i class="fas fa-hand-holding-usd"></i> የክፍያ አስተዳደር</h4>
+            <p>ከሰራተኞች የቀረቡ የክፍያ ጥያቄዎችን ይገምግሙ እና ክፍያ ይፈጽሙ።</p>
+            <a href="{{ url_for('admin_payouts') }}" class="btn warning btn-full">ክፍያዎችን ይመልከቱ</a>
+        </div>
+
+    </div>
+
+</div>
+
+{% include 'footer.html' %}
+
+<style>
+/* Admin Dashboard Styles (በአጠቃላይ style.css ላይ ቢጨመር ይመከራል) */
+
+.header-admin {
+    background: var(--primary-color);
+    color: var(--cream-bg);
+    padding: 30px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.header-admin i {
+    font-size: 3em;
+    color: var(--warning-color);
+    margin-bottom: 10px;
+}
+
+.header-admin h1 {
+    color: var(--cream-bg);
+    font-size: 2.2em;
+}
+.header-admin p {
+    font-size: 1.1em;
+    opacity: 0.8;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.stat-card {
+    background: var(--white);
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: var(--shadow-md);
+    text-align: center;
+    border-bottom: 4px solid;
+}
+.stat-card i {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    opacity: 0.7;
+}
+.stat-card h3 {
+    font-size: 1.3em;
+    margin-bottom: 5px;
+}
+.stat-number {
+    font-size: 3em;
+    font-weight: 900;
+    margin: 0 0 15px 0;
+}
+.pending-tasks { border-color: var(--danger-color); }
+.pending-tasks i { color: var(--danger-color); }
+.pending-tasks .stat-number { color: var(--danger-color); }
+
+.available-inv { border-color: var(--accent-color); }
+.available-inv i { color: var(--accent-color); }
+.available-inv .stat-number { color: var(--accent-color); }
+
+.total-users { border-color: var(--secondary-color); }
+.total-users i { color: var(--secondary-color); }
+.total-users .stat-number { color: var(--secondary-color); }
+
+.btn-small {
+    padding: 8px 15px;
+    font-size: 0.9em;
+}
+.btn-small.secondary {
+    background-color: var(--secondary-color);
+    color: var(--white);
+}
+
+.admin-sections {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.admin-action-card {
+    border-left: 5px solid var(--primary-color);
+    transition: transform 0.3s ease;
+}
+.admin-action-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-hover);
+}
+.admin-action-card h4 {
+    color: var(--primary-color);
+    font-size: 1.5em;
+    margin-bottom: 10px;
+}
+.admin-action-card i {
+    color: var(--warning-color);
+    margin-right: 10px;
+}
+.btn-full {
+    margin-top: 15px;
+}
+.btn.warning {
+    background-color: var(--warning-color);
+    color: var(--text-dark);
+}
+.btn.warning:hover {
+    background-color: #e2a600;
+}
+
+</style>

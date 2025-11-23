@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>G-Task Manager | የጂሜይል አካውንት ሥራ ማዕከል</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <i class="fas fa-tasks"></i> G-Task Manager
+        </div>
+        <nav>
+            <a href="{{ url_for('index') }}" class="nav-link"><i class="fas fa-home"></i> መነሻ</a>
+            
+            {% if session.get('user_id') %}
+                <a href="{{ url_for('dashboard') }}" class="nav-link"><i class="fas fa-tachometer-alt"></i> ዳሽቦርድ</a>
+                {% if is_admin() %}
+                    <a href="{{ url_for('admin_dashboard') }}" class="nav-link btn-admin"><i class="fas fa-user-shield"></i> አስተዳዳሪ</a>
+                {% endif %}
+                <a href="{{ url_for('logout') }}" class="nav-link btn-nav"><i class="fas fa-sign-out-alt"></i> ውጣ</a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="nav-link"><i class="fas fa-sign-in-alt"></i> ግባ</a>
+                <a href="{{ url_for('signup') }}" class="nav-link btn-nav"><i class="fas fa-user-plus"></i> ይመዝገቡ</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="{{ category }}-message">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        ```
+
+---
+
+## 📄 2. `templates/footer.html`
+
+ይህ ፋይል የዌብሳይቱን የመጨረሻ ክፍል ይዘጋል እና የቅጂ መብት መረጃን ያካትታል።
+
+```html
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2025 G-Task Manager. ሁሉም መብቶች የተጠበቁ ናቸው።</p>
+            <p>በ <span class="logo-small">G-Task Manager</span> የተገነባ።</p>
+        </div>
+    </footer>
+    
+    <script>
+        // የፍላሽ መልዕክቶችን ከጥቂት ጊዜ በኋላ የሚያጠፋ
+        document.addEventListener('DOMContentLoaded', function() {
+            const messages = document.querySelectorAll('.error-message, .success-message, .info-message');
+            messages.forEach(msg => {
+                setTimeout(() => {
+                    msg.style.opacity = '0';
+                    msg.style.height = '0';
+                    msg.style.padding = '0 15px';
+                    msg.style.margin = '0 0 20px 0';
+                }, 5000); // ከ 5 ሰከንዶች በኋላ ይጠፋል
+            });
+        });
+
+        // የadmin መብት ያለው ተጠቃሚ መኖሩን ለመቆጣጠር (በ header.html ውስጥ ጥቅም ላይ ይውላል)
+        function is_admin() {
+            // ይህንን ተግባር በ Python ኮድ ውስጥ መቆጣጠር ይሻላል
+            // አሁን በ header.html ላይ ያለው is_admin() ተግባር ከ main.py በሚመጣው global context ይደገፋል
+            return {{ is_admin() | default('False') | tojson }};
+        }
+    </script>
+</body>
+</html>
