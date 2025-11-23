@@ -15,7 +15,12 @@ from dotenv import load_dotenv # ሚስጥሮችን ከአካባቢ ተለዋዋ
 # --- 0. ENV SETUP & CONFIGURATION ---
 load_dotenv() # በ Replit ላይ አውቶማቲክ ይሰራል
 app = Flask(__name__)
-app.secret_key = os.urandom(24) 
+
+# Secret key from environment (required for production)
+secret_key = os.environ.get('SECRET_KEY')
+if not secret_key:
+    raise RuntimeError("SECRET_KEY environment variable must be set. Please add it to Replit Secrets.")
+app.secret_key = secret_key 
 
 # Database Configuration (Neon/PostgreSQL or SQLite fallback)
 # የ DATABASE_URL ሚስጥር ከ Replit Secrets ይነበባል
@@ -81,12 +86,20 @@ def init_db():
         # ሁሉንም ሞዴሎች በመጠቀም ሠንጠረዦችን ይፈጥራል
         db.create_all() 
         
-        # ነባሪ የአድሚን አካውንት
-        if not User.query.filter_by(username='Admin').first():
-            admin_user = User(username='Admin', password_hash=generate_password_hash('password123'), is_admin=True)
-            db.session.add(admin_user)
-            db.session.commit()
-            print("---!!! ማስጠንቀቂያ: ነባሪ የአድሚን አካውንት ተፈጥሯል (Admin/password123)። !!!---")
+        # ነባሪ የአድሚን አካውንት - only if ADMIN_USERNAME and ADMIN_PASSWORD are set
+        admin_username = os.environ.get('ADMIN_USERNAME')
+        admin_password = os.environ.get('ADMIN_PASSWORD')
+        
+        if admin_username and admin_password:
+            if not User.query.filter_by(username=admin_username).first():
+                admin_user = User(
+                    username=admin_username, 
+                    password_hash=generate_password_hash(admin_password), 
+                    is_admin=True
+                )
+                db.session.add(admin_user)
+                db.session.commit()
+                print(f"Admin account created: {admin_username}")
 
 init_db()
 
