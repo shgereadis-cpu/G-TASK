@@ -12,7 +12,10 @@
         <div class="logo">
             <i class="fas fa-tasks"></i> G-Task Manager
         </div>
-        <nav>
+        <button class="mobile-menu-toggle" id="mobile-menu-btn" onclick="toggleMobileMenu()">
+            <i class="fas fa-bars"></i>
+        </button>
+        <nav id="mobile-nav" class="mobile-hidden">
             <a href="{{ url_for('index') }}" class="nav-link"><i class="fas fa-home"></i> መነሻ</a>
             
             {% if session.get('user_id') %}
@@ -27,6 +30,44 @@
             {% endif %}
         </nav>
     </header>
+
+    <script>
+        function toggleMobileMenu() {
+            const nav = document.getElementById('mobile-nav');
+            if (nav.classList.contains('mobile-hidden')) {
+                nav.classList.remove('mobile-hidden');
+                nav.classList.add('mobile-visible');
+            } else {
+                nav.classList.add('mobile-hidden');
+                nav.classList.remove('mobile-visible');
+            }
+        }
+
+        // Close menu when clicking on a link
+        document.querySelectorAll('#mobile-nav .nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('mobile-nav').classList.add('mobile-hidden');
+                document.getElementById('mobile-nav').classList.remove('mobile-visible');
+            });
+        });
+
+        // Hide menu button on desktop
+        function adjustMenuButton() {
+            const menuBtn = document.getElementById('mobile-menu-btn');
+            if (window.innerWidth > 768) {
+                menuBtn.style.display = 'none';
+                document.getElementById('mobile-nav').classList.remove('mobile-hidden');
+                document.getElementById('mobile-nav').classList.add('mobile-visible');
+            } else {
+                menuBtn.style.display = 'block';
+                document.getElementById('mobile-nav').classList.add('mobile-hidden');
+                document.getElementById('mobile-nav').classList.remove('mobile-visible');
+            }
+        }
+
+        window.addEventListener('resize', adjustMenuButton);
+        adjustMenuButton();
+    </script>
 
     <main class="container">
         {% with messages = get_flashed_messages(with_categories=true) %}

@@ -728,38 +728,375 @@ footer {
     color: var(--accent-color);
 }
 
-@media (max-width: 768px) {
+/* ======== MOBILE RESPONSIVE DESIGN ======== */
+
+@media (max-width: 1024px) {
     .dashboard-grid {
         grid-template-columns: 1fr;
     }
 
     .sidebar-panel {
         position: static;
+        top: auto;
+    }
+
+    .container {
+        padding: 0 15px;
+    }
+
+    .hero {
+        padding: 50px 20px;
     }
 
     .hero h1 {
-        font-size: 2em;
+        font-size: 2.2em;
+    }
+
+    .form-container {
+        padding: 25px;
+    }
+
+    .card {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    /* Typography */
+    body {
+        font-size: 14px;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        line-height: 1.3;
+    }
+
+    .hero h1 {
+        font-size: 1.8em;
     }
 
     .hero p {
-        font-size: 1.1em;
+        font-size: 1em;
+    }
+
+    .hero {
+        padding: 40px 15px;
+        margin-bottom: 20px;
     }
 
     .hero-actions {
         flex-direction: column;
+        gap: 10px;
     }
 
-    .feature-cards .card {
-        width: 100%;
+    .btn {
+        padding: 12px 20px;
+        font-size: 1em;
+        min-height: 44px;
     }
 
+    .btn-small {
+        padding: 8px 15px;
+        min-height: 40px;
+    }
+
+    /* Header & Navigation */
     header {
+        flex-direction: column;
+        gap: 10px;
+        padding: 15px;
+        padding-bottom: 10px;
+    }
+
+    header .logo {
+        font-size: 1.4em;
+    }
+
+    header nav {
+        width: 100%;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    header .nav-link {
+        padding: 8px 12px;
+        font-size: 0.95em;
+    }
+
+    /* Mobile menu toggle */
+    .mobile-menu-toggle {
+        display: block;
+        background: none;
+        border: none;
+        color: var(--white);
+        font-size: 1.5em;
+        cursor: pointer;
+        padding: 5px 10px;
+        align-self: flex-start;
+    }
+
+    header nav.mobile-hidden {
+        display: none;
+        position: absolute;
+        top: 60px;
+        left: 0;
+        right: 0;
+        background: var(--primary-color);
+        flex-direction: column;
+        width: 100%;
+        padding: 15px;
+        box-shadow: var(--shadow-md);
+    }
+
+    header nav.mobile-visible {
+        display: flex;
+    }
+
+    /* Containers & Cards */
+    .container {
+        margin: 15px auto;
+        padding: 0 10px;
+    }
+
+    .card {
+        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 8px;
+    }
+
+    .form-container {
+        max-width: 100%;
+        margin: 30px 0;
+        padding: 20px;
+    }
+
+    .form-container h2 {
+        font-size: 1.6em;
+    }
+
+    .form-container input,
+    .form-container textarea {
+        font-size: 16px;
+        padding: 10px;
+        margin-bottom: 15px;
+    }
+
+    /* Dashboard */
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .sidebar-panel {
+        padding: 15px;
+    }
+
+    .user-profile {
+        padding-bottom: 15px;
+        margin-bottom: 15px;
+    }
+
+    .profile-icon {
+        font-size: 3em;
+    }
+
+    .stat-item {
+        padding: 8px;
+        font-size: 0.95em;
+    }
+
+    .main-content h2 {
+        font-size: 1.5em;
+        margin-bottom: 15px;
+    }
+
+    .task-block h3 {
+        font-size: 1.3em;
+    }
+
+    .task-details {
+        padding: 15px;
+    }
+
+    .task-details p {
+        font-size: 1em;
+        margin-bottom: 10px;
+    }
+
+    /* Tables - Mobile Responsive */
+    .task-history-block table {
+        font-size: 0.9em;
+    }
+
+    .task-history-block th,
+    .task-history-block td {
+        padding: 10px 5px;
+    }
+
+    .verification-table table {
+        font-size: 0.9em;
+    }
+
+    .verification-table th,
+    .verification-table td {
+        padding: 10px 5px;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .action-buttons button {
+        width: 100%;
+        padding: 8px 10px;
+        font-size: 0.85em;
+    }
+
+    /* Features */
+    .feature-cards {
         flex-direction: column;
         gap: 15px;
     }
 
-    header nav {
-        flex-wrap: wrap;
-        justify-content: center;
+    .feature-cards .card {
+        width: 100%;
+        min-width: 100%;
+    }
+
+    /* Admin Dashboard */
+    .header-admin {
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .header-admin h1 {
+        font-size: 1.8em;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .stat-card {
+        padding: 15px;
+    }
+
+    .stat-number {
+        font-size: 2.2em;
+    }
+
+    .stat-card i {
+        font-size: 2em;
+    }
+
+    .admin-sections {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    /* Submit Form */
+    .submission-form input {
+        padding: 10px;
+        font-size: 16px;
+        margin-bottom: 12px;
+    }
+
+    .submission-form label {
+        margin-bottom: 8px;
+        font-size: 0.95em;
+    }
+
+    /* Messages */
+    .error-message,
+    .success-message,
+    .info-message,
+    .warning-message {
+        padding: 12px 15px;
+        font-size: 0.95em;
+        margin-bottom: 15px;
+    }
+
+    /* Footer */
+    footer {
+        padding: 20px 15px;
+        margin-top: 30px;
+    }
+
+    .footer-content p {
+        font-size: 0.9em;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Extra Small Screens */
+    header .logo {
+        font-size: 1.2em;
+    }
+
+    header .nav-link {
+        padding: 6px 8px;
+        font-size: 0.85em;
+    }
+
+    .hero h1 {
+        font-size: 1.4em;
+    }
+
+    .hero p {
+        font-size: 0.9em;
+    }
+
+    .btn {
+        padding: 10px 15px;
+        font-size: 0.95em;
+    }
+
+    .container {
+        margin: 10px auto;
+    }
+
+    .card {
+        padding: 12px;
+    }
+
+    .form-container {
+        padding: 15px;
+        margin: 20px 0;
+    }
+
+    .form-container h2 {
+        font-size: 1.4em;
+    }
+
+    .main-content h2 {
+        font-size: 1.3em;
+    }
+
+    .task-block h3 {
+        font-size: 1.1em;
+    }
+
+    .stat-number {
+        font-size: 1.8em;
+    }
+
+    .header-admin h1 {
+        font-size: 1.5em;
+    }
+
+    .header-admin p {
+        font-size: 0.9em;
+    }
+
+    .feature-cards .card h3 {
+        font-size: 1.2em;
+    }
+
+    .feature-cards .card i {
+        font-size: 2.5em;
     }
 }
