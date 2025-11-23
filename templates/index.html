@@ -2,11 +2,14 @@
 
 <div class="hero">
     <h1>
-        <i class="fas fa-hand-holding-usd" style="color: var(--accent-color);"></i> 
-        G-Task Manager: አሁን ገንዘብ ይስሩ
+        <i class="fas fa-hand-holding-usd"></i> 
+        G-Task Manager
     </h1>
+    <p style="font-size: 1.5em; margin-bottom: 20px; font-weight: 600;">
+        አሁን ገንዘብ ይስሩ
+    </p>
     <p>
-        በቀላሉ የጂሜል አካውንቶች በስልክዎ በመክፈት ገንዘብ ይሰሩ የሰሩትን ገንዘብ በቀጥታ በኢትዮጵያ ብር በፈለጉት አማራጭ ገንዘብዎን ይቀበሉ
+        በቀላሉ የጂሜል አካውንቶች በስልክዎ በመክፈት ገንዘብ ይሰሩ። የሰሩትን ገንዘብ በቀጥታ በኢትዮጵያ ብር በፈለጉት አማራጭ ገንዘብዎን ይቀበሉ
     </p>
 
     <div class="hero-actions">
@@ -19,61 +22,32 @@
                 <i class="fas fa-user-plus"></i> ይመዝገቡና ይጀምሩ
             </a>
             <a href="{{ url_for('login') }}" class="btn primary">
-                <i class="fas fa-sign-in-alt"></i> ቀደም ብለው ተመዝግበዋል? ይግቡ
+                <i class="fas fa-sign-in-alt"></i> ቀድሞ አለ? ይግቡ
             </a>
         {% endif %}
     </div>
 
     <div class="feature-list">
-        <h2>ለምን G-Task Manager?</h2>
+        <h2>📱 ለምን G-Task Manager?</h2>
         
         <div class="feature-cards">
             <div class="card">
-                <i class="fas fa-dollar-sign"></i>
-                <h3>ፈጣን ክፍያ</h3>
-                <p>በእያንዳንዱ የተጠናቀቀ ሥራ $0.10 ገቢ ያድርጉ። ገቢዎ ወዲያውኑ ይሰላል።</p>
+                <i class="fas fa-bolt"></i>
+                <h3>ፈጣን ገቢ</h3>
+                <p>በእያንዳንዱ የተጠናቀቀ ሥራ ወዲያውኑ ገቢ ይሰላል። ምንም ቦታ መጠበቅ ሌላ</p>
             </div>
             <div class="card">
-                <i class="fas fa-clock"></i>
-                <h3>ቀላል እና ፈጣን</h3>
-                <p>ሥራዎቹ ቀላል በመሆናቸው በደቂቃዎች ውስጥ ከብዙ ሥራዎች ገቢ ማግኘት ይችላሉ።</p>
+                <i class="fas fa-mobile-alt"></i>
+                <h3>ስልክዎ ብቻ</h3>
+                <p>በስልክዎ ብቻ እንደማ ከቤት ወይም በቅጥ ወቅቱ ሥራ ሥራ ይሰራሉ።</p>
             </div>
             <div class="card">
-                <i class="fas fa-shield-alt"></i>
-                <h3>አስተማማኝ ስርዓት</h3>
-                <p>የእኛ ሲስተም ሥራዎችን በአስተማማኝ ሁኔታ በማከፋፈል ክፍያዎትን ያረጋግጣል።</p>
+                <i class="fas fa-check-circle"></i>
+                <h3>ቀላል ሥራ</h3>
+                <p>ምንም ልምድ ሌላ። ሁሉም ሥራዎች ቀላል እና ደረጃ በደረጃ ነውር።</p>
             </div>
         </div>
     </div>
 </div>
 
 {% include 'footer.html' %}
-
-<style>
-.feature-list {
-    margin-top: 60px;
-    padding-top: 40px;
-    border-top: 1px solid var(--border-light);
-}
-
-.feature-list h2 {
-    font-size: 2em;
-    color: var(--secondary-color);
-    margin-bottom: 30px;
-}
-
-.feature-cards {
-    display: flex;
-    justify-content: space-around;
-    gap: 20px;
-    flex-wrap: wrap;
-}
-
-.card {
-    background: var(--white);
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: var(--shadow-light);
-    width: 30%;
-    min-width: 280px;
-    text-align: center;
