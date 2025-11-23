@@ -17,9 +17,10 @@ load_dotenv() # በ Replit ላይ አውቶማቲክ ይሰራል
 app = Flask(__name__)
 
 # Secret key from environment (required for production)
-secret_key = os.environ.get('SECRET_KEY')
+# Try SECRET_KEY first, fallback to SESSION_SECRET if available
+secret_key = os.environ.get('SECRET_KEY') or os.environ.get('SESSION_SECRET')
 if not secret_key:
-    raise RuntimeError("SECRET_KEY environment variable must be set. Please add it to Replit Secrets.")
+    raise RuntimeError("SECRET_KEY or SESSION_SECRET environment variable must be set. Please add SECRET_KEY to Replit Secrets.")
 app.secret_key = secret_key 
 
 # Database Configuration (Neon/PostgreSQL or SQLite fallback)
@@ -100,6 +101,8 @@ def init_db():
                 db.session.add(admin_user)
                 db.session.commit()
                 print(f"Admin account created: {admin_username}")
+        else:
+            print("ማስጠንቀቂያ: ADMIN_USERNAME እና ADMIN_PASSWORD secrets አልተገኙም። የአድሚን account ለመፍጠር እነዚህን በSecrets ውስጥ ያስገቡ።")
 
 init_db()
 
