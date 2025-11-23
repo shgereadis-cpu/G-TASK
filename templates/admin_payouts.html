@@ -1,0 +1,67 @@
+{% include 'header.html' %}
+
+<div class="admin-dashboard-layout">
+    <div class="header-admin">
+        <i class="fas fa-hand-holding-usd"></i> የክፍያ አስተዳደር
+        <p>ከሰራተኞች የቀረቡ የክፍያ ጥያቄዎችን ይገምግሙ እና ይፈጽሙ።</p>
+    </div>
+
+    <div class="card verification-table">
+        <h3><i class="fas fa-list-alt"></i> በመጠባበቅ ላይ ያሉ የክፍያ ጥያቄዎች</h3>
+        
+        {% if payout_requests %}
+        <table>
+            <thead>
+                <tr>
+                    <th>የሰራተኛ ስም</th>
+                    <th>መጠን ($)</th>
+                    <th>Wallet አድራሻ</th>
+                    <th>የተጠየቀበት ቀን</th>
+                    <th>እርምጃዎች</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payout in payout_requests %}
+                <tr>
+                    <td><strong>{{ payout.worker_username }}</strong></td>
+                    <td style="color: var(--success-color); font-weight: 700;">
+                        ${{ "%.2f"|format(payout.amount) }}
+                    </td>
+                    <td style="font-family: monospace; font-size: 0.9em;">
+                        {{ payout.wallet_address }}
+                    </td>
+                    <td>{{ payout.date_requested.strftime('%Y-%m-%d %H:%M') if payout.date_requested else 'N/A' }}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <form method="POST" action="{{ url_for('admin_action_payout', payout_id=payout.payout_id, action='paid') }}" style="display: inline;">
+                                <button type="submit" class="btn success btn-small">
+                                    <i class="fas fa-check-circle"></i> ተፈጽሟል
+                                </button>
+                            </form>
+                            <form method="POST" action="{{ url_for('admin_action_payout', payout_id=payout.payout_id, action='reject') }}" style="display: inline;">
+                                <button type="submit" class="btn danger btn-small">
+                                    <i class="fas fa-times-circle"></i> አትቀበል
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="text-align: center; padding: 40px 20px; color: var(--text-light);">
+            <i class="fas fa-inbox"></i><br>
+            በአሁኑ ሰዓት በመጠባበቅ ላይ ያለ የክፍያ ጥያቄ የለም።
+        </p>
+        {% endif %}
+    </div>
+
+    <div style="margin-top: 25px; text-align: center;">
+        <a href="{{ url_for('admin_dashboard') }}" class="btn secondary">
+            <i class="fas fa-arrow-left"></i> ወደ አስተዳዳሪ ዳሽቦርድ ይመለሱ
+        </a>
+    </div>
+</div>
+
+{% include 'footer.html' %}
