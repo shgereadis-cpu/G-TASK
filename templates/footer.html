@@ -1,0 +1,24 @@
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2025 G-Task Manager. ሁሉም መብቶች የተጠበቁ ናቸው።</p>
+            <p>በ <span class="logo-small">G-Task Manager</span> የተገነባ።</p>
+        </div>
+    </footer>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const messages = document.querySelectorAll('.error-message, .success-message, .info-message');
+            messages.forEach(msg => {
+                setTimeout(() => {
+                    msg.style.opacity = '0';
+                    msg.style.height = '0';
+                    msg.style.padding = '0 15px';
+                    msg.style.margin = '0 0 20px 0';
+                }, 5000);
+            });
+        });
+    </script>
+</body>
+</html>
