@@ -87,6 +87,17 @@
                 </div>
             {% endif %}
         </div>
+
+        <div class="action-cards-section">
+            <h3 style="margin-bottom: 15px; color: var(--primary-color);">
+                <i class="fas fa-lightbulb"></i> ተጨማሪ ገቢ ስራዎች
+            </h3>
+            <a href="{{ url_for('view_ads') }}" class="dashboard-card action-card">
+                <i class="fas fa-money-bill-wave"></i>
+                <span>ማስታወቂያዎችን በመመልከት ገቢ ያግኙ!</span>
+                <span class="status-Verified">አዲስ</span>
+            </a>
+        </div>
         
         <div id="task-history" class="card task-history-block">
             <h3><i class="fas fa-history"></i> የሥራ ታሪክዎ</h3>
@@ -139,6 +150,54 @@
 {% include 'footer.html' %}
 
 <style>
+/* --- Dashboard Cards --- */
+.action-cards-section {
+    margin: 25px 0;
+}
+
+.dashboard-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+    background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+    border-radius: 10px;
+    color: white;
+    text-decoration: none;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.dashboard-card i {
+    font-size: 2.5em;
+    min-width: 60px;
+    text-align: center;
+}
+
+.dashboard-card span {
+    flex: 1;
+}
+
+.dashboard-card span:first-of-type {
+    font-size: 1.1em;
+    font-weight: 600;
+}
+
+.status-Verified {
+    background: rgba(255, 255, 255, 0.25);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
 /* --- Dashboard Layout --- */
 .dashboard-grid {
     display: grid;
