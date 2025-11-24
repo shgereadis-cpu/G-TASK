@@ -79,6 +79,7 @@ class Payout(db.Model):
     amount = db.Column(db.Float, nullable=False)
     status = db.Column(db.String(20), default='REQUESTED') # REQUESTED, PAID, REJECTED
     payment_method = db.Column(db.String(50), nullable=False) # Telebirr, CBE, M-Pesa
+    recipient_name = db.Column(db.String(255), nullable=False)
     payment_details = db.Column(db.String(255), nullable=False)
     date_requested = db.Column(db.DateTime, default=func.now())
     date_paid = db.Column(db.DateTime)
@@ -306,6 +307,7 @@ def payout_request():
         if request.method == 'POST':
             try:
                 amount = float(request.form['amount'])
+                recipient_name = request.form.get('recipient_name')
                 payment_method = request.form.get('payment_method')
                 payment_details = request.form.get('payment_details')
                 
@@ -313,13 +315,15 @@ def payout_request():
                     flash(f'ዝቅተኛው የክፍያ መጠን ብር{MIN_PAYOUT:.2f} ነው።', 'error')
                 elif amount > user.pending_payout:
                     flash('ሊወጣ ከሚችለው ቀሪ ሂሳብ በላይ ጠይቀዋል።', 'error')
+                elif not recipient_name:
+                    flash('ሞጋዜኛ ስም ያስገቡ።', 'error')
                 elif not payment_method:
                     flash('ክፍያ ዘዴ ምረጥ።', 'error')
                 elif not payment_details:
                     flash('ክፍያ መረጃ ያስገቡ (ስልክ ቁጥር ወይም የባንክ ሂሳብ)።', 'error')
                 else:
                     # 1. የክፍያ ጥያቄ ወደ payouts ሠንጠረዥ ያስገባል
-                    new_payout = Payout(user_id=user_id, amount=amount, payment_method=payment_method, payment_details=payment_details)
+                    new_payout = Payout(user_id=user_id, amount=amount, recipient_name=recipient_name, payment_method=payment_method, payment_details=payment_details)
                     db.session.add(new_payout)
                     
                     # 2. ከሰራተኛው ቀሪ ሂሳብ ላይ ይቀንሳል
