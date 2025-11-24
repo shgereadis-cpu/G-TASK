@@ -81,7 +81,6 @@ class Payout(db.Model):
     payment_method = db.Column(db.String(50), nullable=False) # Telebirr, CBE, M-Pesa
     recipient_name = db.Column(db.String(255), nullable=False)
     payment_details = db.Column(db.String(255), nullable=False)
-    wallet_address = db.Column(db.String(255), nullable=True, default='')
     date_requested = db.Column(db.DateTime, default=func.now())
     date_paid = db.Column(db.DateTime)
 
@@ -103,7 +102,6 @@ def init_db():
                 ('payment_method', "VARCHAR(50) DEFAULT 'Telebirr'"),
                 ('recipient_name', "VARCHAR(255) DEFAULT ''"),
                 ('payment_details', "VARCHAR(255) DEFAULT ''"),
-                ('wallet_address', "VARCHAR(255) DEFAULT ''"),
             ]
             
             for col_name, col_def in columns_to_add:
@@ -336,7 +334,6 @@ def payout_request():
                 recipient_name = request.form.get('recipient_name', '')
                 payment_method = request.form.get('payment_method', '')
                 payment_details = request.form.get('payment_details', '')
-                wallet_address = request.form.get('wallet_address', '')
                 
                 if amount < MIN_PAYOUT:
                     flash(f'ዝቅተኛው የክፍያ መጠን ብር{MIN_PAYOUT:.2f} ነው።', 'error')
@@ -356,8 +353,7 @@ def payout_request():
                             amount=amount, 
                             recipient_name=recipient_name.strip(),
                             payment_method=payment_method.strip(),
-                            payment_details=payment_details.strip(),
-                            wallet_address=wallet_address.strip() if wallet_address else ''
+                            payment_details=payment_details.strip()
                         )
                         db.session.add(new_payout)
                         db.session.flush()
@@ -540,7 +536,7 @@ def admin_payouts():
         return redirect(url_for('dashboard'))
 
     with app.app_context():
-        payout_requests_raw = db.session.execute(db.select(Payout.id.label('payout_id'), Payout.amount, Payout.wallet_address, Payout.date_requested, Payout.recipient_name, Payout.payment_method, Payout.payment_details, User.username.label('worker_username'))
+        payout_requests_raw = db.session.execute(db.select(Payout.id.label('payout_id'), Payout.amount, Payout.date_requested, Payout.recipient_name, Payout.payment_method, Payout.payment_details, User.username.label('worker_username'))
             .join(User, Payout.user_id == User.id)
             .filter(Payout.status == 'REQUESTED')
             .order_by(Payout.date_requested.asc())
@@ -552,7 +548,6 @@ def admin_payouts():
             payout_requests.append({
                 'payout_id': row.payout_id,
                 'amount': row.amount,
-                'wallet_address': row.wallet_address,
                 'date_requested': row.date_requested,
                 'recipient_name': row.recipient_name,
                 'payment_method': row.payment_method,
