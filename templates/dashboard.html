@@ -92,11 +92,11 @@
                     {% for task in my_tasks %}
                     <tr>
                         <td>{{ task.gmail_username }}</td>
-                        <td>{{ task.date_assigned[:10] }}</td>
+                        <td>{{ task.date_assigned.strftime('%Y-%m-%d') if task.date_assigned else 'N/A' }}</td>
                         <td>
                             <span class="status-tag {{ task.status|lower }}">
                                 {% if task.status == 'PENDING' %}
-                                    <i class="fas fa-spinner fa-spin"></i> قيد المراجعة
+                                    <i class="fas fa-spinner fa-spin"></i> በመጠበቅ ላይ
                                 {% elif task.status == 'VERIFIED' %}
                                     <i class="fas fa-check-circle"></i> የተረጋገጠ
                                 {% else %}

@@ -186,18 +186,30 @@ def dashboard():
     with app.app_context():
         user = User.query.filter_by(id=user_id).first()
         
-        current_task = db.session.execute(db.select(Task, Inventory.gmail_username, Inventory.gmail_password)
-            .join(Inventory, Task.inventory_id == Inventory.id)
-            .filter(Task.user_id == user_id, Task.status.in_(['PENDING', 'SUBMITTED']))
-        ).first()
+        current_task_obj = Task.query.filter(Task.user_id == user_id, Task.status.in_(['PENDING', 'SUBMITTED'])).first()
+        
+        # Prepare current_task with inventory data
+        current_task = None
+        if current_task_obj:
+            inventory = Inventory.query.filter_by(id=current_task_obj.inventory_id).first()
+            current_task = {
+                'id': current_task_obj.id,
+                'gmail_username': inventory.gmail_username if inventory else '',
+                'gmail_password': inventory.gmail_password if inventory else ''
+            }
 
         available_task = Inventory.query.filter_by(status='AVAILABLE').first()
 
-        my_tasks = db.session.execute(db.select(Task, Inventory.gmail_username)
-            .join(Inventory, Task.inventory_id == Inventory.id)
-            .filter(Task.user_id == user_id)
-            .order_by(Task.date_assigned.desc())
-        ).scalars().all()
+        my_tasks_obj = Task.query.filter(Task.user_id == user_id).order_by(Task.date_assigned.desc()).all()
+        my_tasks = []
+        for task in my_tasks_obj:
+            inventory = Inventory.query.filter_by(id=task.inventory_id).first()
+            my_tasks.append({
+                'id': task.id,
+                'gmail_username': inventory.gmail_username if inventory else '',
+                'status': task.status,
+                'date_assigned': task.date_assigned
+            })
     
     return render_template('dashboard.html', 
                            user=user, 

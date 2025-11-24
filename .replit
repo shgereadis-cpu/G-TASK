@@ -44,5 +44,5 @@ externalPort = 3001
 [userenv]
 
 [userenv.shared]
-ADMIN_USERNAME = "abel"
-ADMIN_PASSWORD = "Ethiopia123"
+ADMIN_USERNAME = "Admin"
+ADMIN_PASSWORD = "password123"
