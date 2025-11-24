@@ -540,11 +540,25 @@ def admin_payouts():
         return redirect(url_for('dashboard'))
 
     with app.app_context():
-        payout_requests = db.session.execute(db.select(Payout.id.label('payout_id'), Payout.amount, Payout.wallet_address, Payout.date_requested, User.username.label('worker_username'))
+        payout_requests_raw = db.session.execute(db.select(Payout.id.label('payout_id'), Payout.amount, Payout.wallet_address, Payout.date_requested, Payout.recipient_name, Payout.payment_method, Payout.payment_details, User.username.label('worker_username'))
             .join(User, Payout.user_id == User.id)
             .filter(Payout.status == 'REQUESTED')
             .order_by(Payout.date_requested.asc())
         ).all()
+        
+        # Convert Row objects to dictionaries for template access
+        payout_requests = []
+        for row in payout_requests_raw:
+            payout_requests.append({
+                'payout_id': row.payout_id,
+                'amount': row.amount,
+                'wallet_address': row.wallet_address,
+                'date_requested': row.date_requested,
+                'recipient_name': row.recipient_name,
+                'payment_method': row.payment_method,
+                'payment_details': row.payment_details,
+                'worker_username': row.worker_username
+            })
     
     return render_template('admin_payouts.html', payout_requests=payout_requests)
 
