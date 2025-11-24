@@ -250,10 +250,15 @@ def take_task():
 def submit_task(task_id):
     if not is_logged_in(): return redirect(url_for('login'))
     user_id = session['user_id']
-    completion_code = request.form.get('completion_code')
     
-    if not completion_code:
-        flash('የማረጋገጫ ኮዱን ማስገባት አለብዎት።', 'error')
+    # Check if screenshot file is uploaded
+    if 'screenshot' not in request.files:
+        flash('ስክሪንሻት ምስል ማስገባት አለብዎት።', 'error')
+        return redirect(url_for('dashboard'))
+    
+    screenshot_file = request.files['screenshot']
+    if screenshot_file.filename == '':
+        flash('ስክሪንሻት ምስል ምረጥ።', 'error')
         return redirect(url_for('dashboard'))
 
     with app.app_context():
@@ -268,7 +273,14 @@ def submit_task(task_id):
             return redirect(url_for('dashboard'))
 
         try:
-            task.completion_code = completion_code
+            # Save screenshot file to a secure location
+            os.makedirs('static/screenshots', exist_ok=True)
+            filename = f"task_{task_id}_{user_id}_{int(time.time())}.png"
+            screenshot_path = os.path.join('static/screenshots', filename)
+            screenshot_file.save(screenshot_path)
+            
+            # Store the filename as the completion code
+            task.completion_code = filename
             task.status = 'SUBMITTED'
             task.date_completed = func.now()
             db.session.commit()

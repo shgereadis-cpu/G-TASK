@@ -47,14 +47,22 @@
                         <strong>የይለፍ ቃል:</strong> <span class="highlight-danger">{{ current_task.gmail_password }}</span>
                     </p>
                     <p class="instruction">
-                        <i class="fas fa-exclamation-triangle"></i> ወደ gmail.com በመሄድ በዚህ መረጃ አዲስ አካውንት ይፍጠሩ።
+                        <i class="fas fa-exclamation-triangle"></i> ወደ gmail.com በመሄድ በዚህ መረጃ አዲስ አካውንት ይፍጠሩ እና ኢሜሉ ተከፈተ ወደሚያሳይ ስክሪንሻት ይልኩ።
                     </p>
                 </div>
                 
-                <form method="POST" action="{{ url_for('submit_task', task_id=current_task.id) }}" class="submission-form">
-                    <label for="completion_code">ከቦቱ ያገኙትን የመጨረሻ ማረጋገጫ ኮድ ያስገቡ:</label>
-                    <input type="text" id="completion_code" name="completion_code" required 
-                           placeholder="ኮዱን ያስገቡ">
+                <form method="POST" action="{{ url_for('submit_task', task_id=current_task.id) }}" class="submission-form" enctype="multipart/form-data">
+                    <label for="screenshot_upload">
+                        <i class="fas fa-camera"></i> ኢሜሉን መከፈቱን የሚያሳይ ኢሜሉን ስክሪንሻት አድርገው ይላኩ
+                    </label>
+                    <div class="screenshot-upload-area">
+                        <input type="file" id="screenshot_upload" name="screenshot" required 
+                               accept="image/*" 
+                               placeholder="ስክሪንሻት ምረጥ">
+                        <p style="font-size: 0.9em; color: var(--text-light); margin-top: 10px;">
+                            <i class="fas fa-info-circle"></i> PNG, JPG ወይም JPEG ምስል ይምረጡ
+                        </p>
+                    </div>
                     <button type="submit" class="btn success btn-full">
                         <i class="fas fa-check"></i> ሥራዬን አስረክብና $0.10 ተቀበል
                     </button>
