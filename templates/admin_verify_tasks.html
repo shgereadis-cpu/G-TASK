@@ -31,6 +31,16 @@
                         <span class="label highlight-label"><i class="fas fa-lock"></i> የተሰጠ የማረጋገጫ ኮድ:</span>
                         <code class="value highlight-value">{{ task.completion_code }}</code>
                     </div>
+                    
+                    {% if task.completion_code %}
+                    <div class="detail-item screenshot-item">
+                        <span class="label highlight-label"><i class="fas fa-image"></i> የተሰጠ ቅጂ ምስል:</span>
+                        <div class="screenshot-container">
+                            <img src="{{ url_for('static', filename='screenshots/' + task.completion_code) }}" 
+                                 alt="Task screenshot" class="verification-screenshot">
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
 
                 <div class="task-actions">
@@ -124,4 +134,35 @@ code.value {
 }
 
 .code-item {
-    border: 1
+    border: 1px solid var(--danger-color);
+    padding: 10px;
+    background-color: #fff9f5;
+    border-radius: 6px;
+}
+
+.screenshot-item {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.screenshot-container {
+    margin-top: 10px;
+    background: var(--cream-bg);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid var(--border-light);
+    display: flex;
+    justify-content: center;
+}
+
+.verification-screenshot {
+    max-width: 100%;
+    max-height: 400px;
+    border-radius: 6px;
+    box-shadow: var(--shadow-md);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.verification-screenshot:hover {
+    transform: scale(1.02);
