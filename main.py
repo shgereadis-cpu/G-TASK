@@ -92,6 +92,18 @@ def init_db():
         # ሁሉንም ሞዴሎች በመጠቀም ሠንጠረዦችን ይፈጥራል
         db.create_all() 
         
+        # Add recipient_name column to payouts table if it doesn't exist
+        try:
+            from sqlalchemy import text
+            db.session.execute(text('ALTER TABLE payouts ADD COLUMN recipient_name VARCHAR(255) DEFAULT \'\''))
+            db.session.commit()
+            print("Added recipient_name column to payouts table")
+        except Exception as e:
+            db.session.rollback()
+            # Column might already exist, which is fine
+            if "already exists" not in str(e).lower():
+                print(f"Note: {e}")
+        
         # ነባሪ የአድሚን አካውንት - only if ADMIN_USERNAME and ADMIN_PASSWORD are set
         admin_username = os.environ.get('ADMIN_USERNAME')
         admin_password = os.environ.get('ADMIN_PASSWORD')
