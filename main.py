@@ -396,12 +396,23 @@ def admin_verify_tasks():
         return redirect(url_for('dashboard'))
 
     with app.app_context():
-        submitted_tasks = db.session.execute(db.select(Task.id.label('task_id'), Task.completion_code, Task.date_completed, Inventory.gmail_username, User.username.label('worker_username'))
+        submitted_tasks_raw = db.session.execute(db.select(Task.id.label('task_id'), Task.completion_code, Task.date_completed, Inventory.gmail_username, User.username.label('worker_username'))
             .join(Inventory, Task.inventory_id == Inventory.id)
             .join(User, Task.user_id == User.id)
             .filter(Task.status == 'SUBMITTED')
             .order_by(Task.date_completed.asc())
         ).all()
+        
+        # Convert Row objects to dictionaries for template access
+        submitted_tasks = []
+        for row in submitted_tasks_raw:
+            submitted_tasks.append({
+                'task_id': row.task_id,
+                'completion_code': row.completion_code,
+                'date_completed': row.date_completed,
+                'gmail_username': row.gmail_username,
+                'worker_username': row.worker_username
+            })
         
     return render_template('admin_verify_tasks.html', submitted_tasks=submitted_tasks)
 

@@ -18,7 +18,7 @@
                         <i class="fas fa-user-circle"></i> ሰራተኛ: <strong>{{ task.worker_username }}</strong>
                     </span>
                     <span class="task-date">
-                        <i class="fas fa-clock"></i> የቀረበበት ቀን: {{ task.date_completed[:16] }}
+                        <i class="fas fa-clock"></i> የቀረበበት ቀን: {{ task.date_completed.strftime('%Y-%m-%d %H:%M') if task.date_completed else 'N/A' }}
                     </span>
                 </div>
                 
