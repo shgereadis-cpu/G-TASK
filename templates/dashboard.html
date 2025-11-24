@@ -88,14 +88,26 @@
             {% endif %}
         </div>
 
-        <div class="action-cards-section">
-            <h3 style="margin-bottom: 15px; color: var(--primary-color);">
-                <i class="fas fa-lightbulb"></i> ተጨማሪ ገቢ ስራዎች
-            </h3>
-            <a href="{{ url_for('view_ads') }}" class="dashboard-card action-card">
-                <i class="fas fa-money-bill-wave"></i>
-                <span>ማስታወቂያዎችን በመመልከት ገቢ ያግኙ!</span>
-                <span class="status-Verified">አዲስ</span>
+        <div class="featured-opportunity-section">
+            <a href="{{ url_for('view_ads') }}" class="featured-card">
+                <div class="featured-card-inner">
+                    <div class="featured-icon">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <div class="featured-content">
+                        <div class="featured-badge">🎁 ጠቅላላ ወደ ገቢዎ ያክሉ</div>
+                        <h3>ማስታወቂያዎችን በመመልከት ገቢ ያግኙ!</h3>
+                        <p>ቀጥተኛ ወደ ዳሽቦርድዎ በሚወጣ ገንዘብ ተሳኢቅ የተገለጽ ጊዜ ዝርዝር ይመልከቱ።</p>
+                        <div class="featured-stats">
+                            <span class="stat-badge"><i class="fas fa-clock"></i> ⏱ ፈጣን</span>
+                            <span class="stat-badge"><i class="fas fa-money-bill-alt"></i> 💰 ኢንስታንት</span>
+                            <span class="stat-badge success-badge">🆕 አዲስ</span>
+                        </div>
+                    </div>
+                    <div class="featured-arrow">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                </div>
             </a>
         </div>
         
@@ -150,52 +162,147 @@
 {% include 'footer.html' %}
 
 <style>
-/* --- Dashboard Cards --- */
-.action-cards-section {
-    margin: 25px 0;
+/* --- Featured Opportunity Section --- */
+.featured-opportunity-section {
+    margin: 30px 0;
+    animation: fadeInScale 0.6s ease-out;
 }
 
-.dashboard-card {
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.featured-card {
+    display: block;
+    text-decoration: none;
+    background: linear-gradient(135deg, #FF6B35 0%, #F7931E 50%, #FDB833 100%);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(255, 107, 53, 0.3), 0 0 40px rgba(255, 183, 51, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform: translateY(0);
+}
+
+.featured-card:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 16px 48px rgba(255, 107, 53, 0.4), 0 0 60px rgba(255, 183, 51, 0.25);
+}
+
+.featured-card:active {
+    transform: translateY(-6px);
+}
+
+.featured-card-inner {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 24px;
+    align-items: center;
+    padding: 28px 32px;
+    color: white;
+    position: relative;
+    z-index: 1;
+}
+
+@media (max-width: 600px) {
+    .featured-card-inner {
+        grid-template-columns: auto 1fr;
+        gap: 16px;
+        padding: 20px;
+    }
+}
+
+.featured-icon {
+    font-size: 3.5em;
+    min-width: 70px;
+    text-align: center;
     display: flex;
     align-items: center;
-    gap: 20px;
-    padding: 20px;
-    background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
-    border-radius: 10px;
-    color: white;
-    text-decoration: none;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 12px;
+    width: 70px;
+    height: 70px;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
 }
 
-.dashboard-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-}
-
-.dashboard-card i {
-    font-size: 2.5em;
-    min-width: 60px;
-    text-align: center;
-}
-
-.dashboard-card span {
+.featured-content {
     flex: 1;
 }
 
-.dashboard-card span:first-of-type {
-    font-size: 1.1em;
-    font-weight: 600;
+.featured-badge {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.3);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    font-weight: 700;
+    margin-bottom: 8px;
+    backdrop-filter: blur(10px);
 }
 
-.status-Verified {
+.featured-content h3 {
+    font-size: 1.5em;
+    margin: 8px 0;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+.featured-content p {
+    font-size: 0.95em;
+    opacity: 0.95;
+    margin: 8px 0 12px 0;
+    line-height: 1.4;
+}
+
+.featured-stats {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.stat-badge {
     background: rgba(255, 255, 255, 0.25);
     padding: 6px 12px;
-    border-radius: 20px;
+    border-radius: 8px;
     font-size: 0.85em;
     font-weight: 600;
     white-space: nowrap;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.stat-badge i {
+    margin-right: 4px;
+}
+
+.success-badge {
+    background: rgba(76, 175, 80, 0.3);
+    border-color: rgba(76, 175, 80, 0.5);
+}
+
+.featured-arrow {
+    font-size: 1.8em;
+    opacity: 0.8;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.featured-card:hover .featured-arrow {
+    transform: translateX(8px);
+    opacity: 1;
+}
+
+@media (max-width: 600px) {
+    .featured-arrow {
+        display: none;
+    }
 }
 
 /* --- Dashboard Layout --- */
