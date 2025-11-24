@@ -33,7 +33,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-MIN_PAYOUT = 1.00 
+MIN_PAYOUT = 0.10 
 PAYOUT_AMOUNT_PER_TASK = 0.10 
 
 # --- 1. DATABASE MODELS (SQLAlchemy Models) ---
