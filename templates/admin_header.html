@@ -3,32 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>G-Task Manager | የጂሜይል አካውንት ሥራ ማዕከል</title>
+    <title>G-Task Manager | አስተዳዳሪ ንክ</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 </head>
 <body>
     <header>
         <div class="logo">
-            <i class="fas fa-tasks"></i> G-Task Manager
+            <i class="fas fa-tasks"></i> G-Task Manager | <span style="color: var(--secondary-color);"><i class="fas fa-user-shield"></i> አስተዳዳሪ</span>
         </div>
         <button class="mobile-menu-toggle" id="mobile-menu-btn" onclick="toggleMobileMenu()">
             <i class="fas fa-bars"></i>
         </button>
         <nav id="mobile-nav" class="mobile-hidden">
             <a href="{{ url_for('index') }}" class="nav-link"><i class="fas fa-home"></i> መነሻ</a>
-            
-            {% if session.get('user_id') %}
-                <a href="{{ url_for('dashboard') }}" class="nav-link"><i class="fas fa-tachometer-alt"></i> ዳሽቦርድ</a>
-                <a href="{{ url_for('change_password') }}" class="nav-link"><i class="fas fa-lock"></i> የይለፍ ቃል ቀይር</a>
-                <a href="{{ url_for('view_ads') }}" class="nav-link"><i class="fas fa-video"></i> ማስታወቂያዎች</a>
-                {% if is_admin() %}
-                    <a href="{{ url_for('admin_dashboard') }}" class="nav-link btn-admin"><i class="fas fa-user-shield"></i> አስተዳዳሪ</a>
-                {% endif %}
+            {% if session.get('user_id') and is_admin() %}
+                <a href="{{ url_for('admin_dashboard') }}" class="nav-link btn-admin"><i class="fas fa-chart-line"></i> ዳሽቦርድ</a>
+                <a href="{{ url_for('admin_add_tasks') }}" class="nav-link"><i class="fas fa-plus-square"></i> ስራ ጨምር</a>
+                <a href="{{ url_for('admin_verify_tasks') }}" class="nav-link"><i class="fas fa-check-double"></i> ስራ ይረግጡ</a>
+                <a href="{{ url_for('admin_manage_ads') }}" class="nav-link"><i class="fas fa-ad"></i> ማስታወቂያዎች</a>
+                <a href="{{ url_for('admin_payouts') }}" class="nav-link"><i class="fas fa-money-check"></i> ክፍያዎች</a>
+                <a href="{{ url_for('dashboard') }}" class="nav-link"><i class="fas fa-tachometer-alt"></i> ሰራተኛ ዳሽቦርድ</a>
                 <a href="{{ url_for('logout') }}" class="nav-link btn-nav"><i class="fas fa-sign-out-alt"></i> ውጣ</a>
-            {% else %}
-                <a href="{{ url_for('login') }}" class="nav-link"><i class="fas fa-sign-in-alt"></i> ግባ</a>
-                <a href="{{ url_for('signup') }}" class="nav-link btn-nav"><i class="fas fa-user-plus"></i> ይመዝገቡ</a>
             {% endif %}
         </nav>
     </header>
@@ -45,7 +41,6 @@
             }
         }
 
-        // Close menu when clicking on a link
         document.querySelectorAll('#mobile-nav .nav-link').forEach(link => {
             link.addEventListener('click', () => {
                 document.getElementById('mobile-nav').classList.add('mobile-hidden');
@@ -53,7 +48,6 @@
             });
         });
 
-        // Hide menu button on desktop
         function adjustMenuButton() {
             const menuBtn = document.getElementById('mobile-menu-btn');
             if (window.innerWidth > 768) {
