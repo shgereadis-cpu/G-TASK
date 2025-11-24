@@ -14,11 +14,11 @@
             <h4><i class="fas fa-wallet"></i> የገንዘብ ሁኔታዎ</h4>
             <div class="stat-item earned">
                 <span>አጠቃላይ ገቢ:</span>
-                <strong>$ {{ "%.2f"|format(user.total_earned) }}</strong>
+                <strong>ብር {{ "%.2f"|format(user.total_earned) }}</strong>
             </div>
             <div class="stat-item pending">
                 <span>ሊወጣ የሚችል ቀሪ ሂሳብ:</span>
-                <strong>$ {{ "%.2f"|format(user.pending_payout) }}</strong>
+                <strong>ብር {{ "%.2f"|format(user.pending_payout) }}</strong>
             </div>
             <a href="{{ url_for('payout_request') }}" class="btn success btn-full" style="margin-top: 15px;">
                 <i class="fas fa-paper-plane"></i> ገንዘብ ይጠይቁ
@@ -67,7 +67,7 @@
                         </p>
                     </div>
                     <button type="submit" class="btn success btn-full">
-                        <i class="fas fa-check"></i> ሥራዬን አስረክብና $0.10 ተቀበል
+                        <i class="fas fa-check"></i> ሥራዬን አስረክብና ብር 9 ተቀበል
                     </button>
                 </form>
 
@@ -117,7 +117,7 @@
                         </td>
                         <td>
                             {% if task.status == 'VERIFIED' %}
-                                $0.10
+                                ብር 9
                             {% else %}
                                 -
                             {% endif %}

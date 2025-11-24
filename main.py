@@ -33,8 +33,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-MIN_PAYOUT = 0.10 
-PAYOUT_AMOUNT_PER_TASK = 0.10 
+MIN_PAYOUT = 9.00 
+PAYOUT_AMOUNT_PER_TASK = 9.00 
 
 # --- 1. DATABASE MODELS (SQLAlchemy Models) ---
 
@@ -78,7 +78,8 @@ class Payout(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     amount = db.Column(db.Float, nullable=False)
     status = db.Column(db.String(20), default='REQUESTED') # REQUESTED, PAID, REJECTED
-    wallet_address = db.Column(db.String(255), nullable=False)
+    payment_method = db.Column(db.String(50), nullable=False) # Telebirr, CBE, M-Pesa
+    payment_details = db.Column(db.String(255), nullable=False)
     date_requested = db.Column(db.DateTime, default=func.now())
     date_paid = db.Column(db.DateTime)
 
@@ -305,24 +306,27 @@ def payout_request():
         if request.method == 'POST':
             try:
                 amount = float(request.form['amount'])
-                wallet_address = request.form['wallet_address']
+                payment_method = request.form.get('payment_method')
+                payment_details = request.form.get('payment_details')
                 
                 if amount < MIN_PAYOUT:
-                    flash(f'ዝቅተኛው የክፍያ መጠን ${MIN_PAYOUT:.2f} ነው።', 'error')
+                    flash(f'ዝቅተኛው የክፍያ መጠን ብር{MIN_PAYOUT:.2f} ነው።', 'error')
                 elif amount > user.pending_payout:
                     flash('ሊወጣ ከሚችለው ቀሪ ሂሳብ በላይ ጠይቀዋል።', 'error')
-                elif not wallet_address:
-                    flash('የUSDT Wallet አድራሻ ማስገባት አለብዎት።', 'error')
+                elif not payment_method:
+                    flash('ክፍያ ዘዴ ምረጥ።', 'error')
+                elif not payment_details:
+                    flash('ክፍያ መረጃ ያስገቡ (ስልክ ቁጥር ወይም የባንክ ሂሳብ)።', 'error')
                 else:
                     # 1. የክፍያ ጥያቄ ወደ payouts ሠንጠረዥ ያስገባል
-                    new_payout = Payout(user_id=user_id, amount=amount, wallet_address=wallet_address)
+                    new_payout = Payout(user_id=user_id, amount=amount, payment_method=payment_method, payment_details=payment_details)
                     db.session.add(new_payout)
                     
                     # 2. ከሰራተኛው ቀሪ ሂሳብ ላይ ይቀንሳል
                     user.pending_payout -= amount
                                          
                     db.session.commit()
-                    flash(f'የ ${amount:.2f} ክፍያ ጥያቄ ገብቷል። አስተዳዳሪ እስኪያረጋግጥ ይጠብቁ።', 'success')
+                    flash(f'የ ብር{amount:.2f} ክፍያ ጥያቄ ገብቷል ({payment_method})። አስተዳዳሪ እስኪያረጋግጥ ይጠብቁ።', 'success')
                     return redirect(url_for('dashboard'))
 
             except ValueError:
