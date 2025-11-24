@@ -92,17 +92,29 @@ def init_db():
         # ሁሉንም ሞዴሎች በመጠቀም ሠንጠረዦችን ይፈጥራል
         db.create_all() 
         
-        # Add recipient_name column to payouts table if it doesn't exist
+        # Add missing columns to payouts table
+        from sqlalchemy import text, inspect
         try:
-            from sqlalchemy import text
-            db.session.execute(text('ALTER TABLE payouts ADD COLUMN recipient_name VARCHAR(255) DEFAULT \'\''))
-            db.session.commit()
-            print("Added recipient_name column to payouts table")
+            inspector = inspect(db.engine)
+            payouts_columns = [col['name'] for col in inspector.get_columns('payouts')]
+            
+            columns_to_add = [
+                ('payment_method', "VARCHAR(50) DEFAULT 'Telebirr'"),
+                ('recipient_name', "VARCHAR(255) DEFAULT ''"),
+                ('payment_details', "VARCHAR(255) DEFAULT ''"),
+            ]
+            
+            for col_name, col_def in columns_to_add:
+                if col_name not in payouts_columns:
+                    try:
+                        db.session.execute(text(f'ALTER TABLE payouts ADD COLUMN {col_name} {col_def}'))
+                        db.session.commit()
+                        print(f"Added {col_name} column to payouts table")
+                    except Exception as e:
+                        db.session.rollback()
+                        print(f"Column {col_name} already exists or error: {str(e)[:100]}")
         except Exception as e:
-            db.session.rollback()
-            # Column might already exist, which is fine
-            if "already exists" not in str(e).lower():
-                print(f"Note: {e}")
+            print(f"Error checking columns: {str(e)[:100]}")
         
         # ነባሪ የአድሚን አካውንት - only if ADMIN_USERNAME and ADMIN_PASSWORD are set
         admin_username = os.environ.get('ADMIN_USERNAME')
@@ -319,37 +331,51 @@ def payout_request():
         if request.method == 'POST':
             try:
                 amount = float(request.form['amount'])
-                recipient_name = request.form.get('recipient_name')
-                payment_method = request.form.get('payment_method')
-                payment_details = request.form.get('payment_details')
+                recipient_name = request.form.get('recipient_name', '')
+                payment_method = request.form.get('payment_method', '')
+                payment_details = request.form.get('payment_details', '')
                 
                 if amount < MIN_PAYOUT:
                     flash(f'ዝቅተኛው የክፍያ መጠን ብር{MIN_PAYOUT:.2f} ነው።', 'error')
                 elif amount > user.pending_payout:
                     flash('ሊወጣ ከሚችለው ቀሪ ሂሳብ በላይ ጠይቀዋል።', 'error')
-                elif not recipient_name:
+                elif not recipient_name or len(recipient_name.strip()) == 0:
                     flash('የአካውንት ባለቤት ስም ያስገቡ።', 'error')
-                elif not payment_method:
+                elif not payment_method or len(payment_method.strip()) == 0:
                     flash('ክፍያ ዘዴ ምረጥ።', 'error')
-                elif not payment_details:
+                elif not payment_details or len(payment_details.strip()) == 0:
                     flash('ክፍያ መረጃ ያስገቡ (ስልክ ቁጥር ወይም የባንክ ሂሳብ)።', 'error')
                 else:
-                    # 1. የክፍያ ጥያቄ ወደ payouts ሠንጠረዥ ያስገባል
-                    new_payout = Payout(user_id=user_id, amount=amount, recipient_name=recipient_name, payment_method=payment_method, payment_details=payment_details)
-                    db.session.add(new_payout)
-                    
-                    # 2. ከሰራተኛው ቀሪ ሂሳብ ላይ ይቀንሳል
-                    user.pending_payout -= amount
-                                         
-                    db.session.commit()
-                    flash(f'የ ብር{amount:.2f} ክፍያ ጥያቄ ገብቷል ({payment_method})። አስተዳዳሪ እስኪያረጋግጥ ይጠብቁ።', 'success')
-                    return redirect(url_for('dashboard'))
+                    try:
+                        # 1. የክፍያ ጥያቄ ወደ payouts ሠንጠረዥ ያስገባል
+                        new_payout = Payout(
+                            user_id=user_id, 
+                            amount=amount, 
+                            recipient_name=recipient_name.strip(),
+                            payment_method=payment_method.strip(),
+                            payment_details=payment_details.strip()
+                        )
+                        db.session.add(new_payout)
+                        db.session.flush()
+                        
+                        # 2. ከሰራተኛው ቀሪ ሂሳብ ላይ ይቀንሳል
+                        user.pending_payout -= amount
+                        db.session.commit()
+                        
+                        flash(f'የ ብር{amount:.2f} ክፍያ ጥያቄ ገብቷል ({payment_method})። አስተዳዳሪ እስኪያረጋግጥ ይጠብቁ።', 'success')
+                        return redirect(url_for('dashboard'))
+                    except Exception as db_err:
+                        db.session.rollback()
+                        error_msg = str(db_err)
+                        print(f"Database error: {error_msg}")
+                        flash(f'ክፍያ ጥያቄ ሲወጣ ስህተት ተከስቷል። እባክዎ ደግሞ ይሞክሩ።', 'error')
 
             except ValueError:
                 flash('ትክክለኛ መጠን ያስገቡ።', 'error')
             except Exception as e:
                 db.session.rollback()
-                flash(f'ጥያቄውን በማስገባት ላይ ስህተት ተከስቷል: {e}', 'error')
+                print(f"Error: {e}")
+                flash(f'ጥያቄውን በማስገባት ላይ ስህተት ተከስቷል።', 'error')
         
         # Convert user to dict to avoid detached instance error
         user_data = {
