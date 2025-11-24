@@ -36,7 +36,7 @@
                 <div class="ad-reward-info">
                     <span>
                         <i class="fas fa-money-bill-alt"></i> ሽልማት: 
-                        <strong>ብር{{ '%.2f' | format(ad.reward_amount) }}</strong>
+                        <strong>${{ '%.2f' | format(ad.reward_amount) }}</strong>
                     </span>
                     <span id="timer-{{ ad.id }}">
                         <i class="fas fa-hourglass-half"></i> ጊዜ: 
