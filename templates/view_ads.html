@@ -1,0 +1,82 @@
+{% include 'header.html' %}
+
+<div class="container" style="margin-top: 30px;">
+    <h2>
+        <i class="fas fa-tv" style="color: var(--primary-color);"></i>
+        ማስታወቂያዎች ይመልከቱ - ገንዘብ ያግኙ!
+    </h2>
+    <p style="text-align: center; color: var(--text-light); margin-bottom: 25px;">
+        ማስታወቂያዎችን ይመልከቱ እና ለእያንዳንዱ ማስታወቂያ ብር ያግኙ!
+    </p>
+
+    {% if available_ads %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px;">
+            {% for ad in available_ads %}
+            <div style="border: 1px solid var(--border-light); border-radius: 8px; padding: 20px; background: var(--card-bg);">
+                <h3 style="margin-bottom: 15px; color: var(--primary-color);">
+                    <i class="fas fa-play-circle"></i> {{ ad.title }}
+                </h3>
+                
+                <!-- Embed Video -->
+                <iframe width="100%" height="200" style="border-radius: 6px; margin-bottom: 15px;"
+                        src="https://www.youtube.com/embed/{{ ad.embed_url.split('embed/')[-1] if 'embed/' in ad.embed_url else ad.embed_url }}"
+                        frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen>
+                </iframe>
+
+                <div style="background: rgba(76, 175, 80, 0.1); padding: 12px; border-radius: 6px; margin-bottom: 15px; text-align: center;">
+                    <p style="margin: 0; color: var(--success-color); font-weight: bold; font-size: 18px;">
+                        <i class="fas fa-coins"></i> ብር{{ ad.reward_amount }}.00
+                    </p>
+                    <p style="margin: 5px 0 0 0; font-size: 12px; color: var(--text-light);">
+                        <i class="fas fa-hourglass-half"></i> የሚያስፈልግ ሰዓት: {{ ad.required_view_time }} ሰከንድ
+                    </p>
+                </div>
+
+                {% if ad.id in viewed_today %}
+                    <button class="btn" style="width: 100%; background: #ccc; cursor: not-allowed;" disabled>
+                        <i class="fas fa-check-circle"></i> ዛሬ ተሰጥቷል ✓
+                    </button>
+                {% else %}
+                    <button class="btn primary" style="width: 100%;" onclick="claimReward({{ ad.id }}, {{ ad.reward_amount }})">
+                        <i class="fas fa-gift"></i> ሪወርድ ጠይቅ
+                    </button>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 40px; background: var(--card-bg); border-radius: 8px;">
+            <i class="fas fa-inbox" style="font-size: 48px; color: var(--text-light); margin-bottom: 20px; display: block;"></i>
+            <p style="color: var(--text-light); font-size: 16px;">
+                አሁን ምንም ማስታወቂያ የለም። ቀደም ሲል ተሞክሮ ዳግም ይመለሱ!
+            </p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    function claimReward(adId, rewardAmount) {
+        fetch(`/register_ad_reward/${adId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(`✓ ስኖይ!\n${data.message}`);
+                location.reload();
+            } else {
+                alert(`⚠ ${data.message}`);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('ስህተት ተከስቷል። እባክዎ ደግሞ ይሞክሩ።');
+        });
+    }
+</script>
+
+{% include 'footer.html' %}
