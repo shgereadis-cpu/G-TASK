@@ -16,12 +16,9 @@ from dotenv import load_dotenv # ሚስጥሮችን ከአካባቢ ተለዋዋ
 load_dotenv() # በ Replit ላይ አውቶማቲክ ይሰራል
 app = Flask(__name__)
 
-# Secret key from environment (required for production)
-# Try SECRET_KEY first, fallback to SESSION_SECRET if available
-secret_key = os.environ.get('SECRET_KEY') or os.environ.get('SESSION_SECRET')
-if not secret_key:
-    raise RuntimeError("SECRET_KEY or SESSION_SECRET environment variable must be set. Please add SECRET_KEY to Replit Secrets.")
-app.secret_key = secret_key 
+# !!! [ማስተካከያ] SECRET KEYን በቀጥታ ኮድ ውስጥ ማስገባት !!!
+# ይህ ለጊዜያዊ Deployment ስህተትን ለመፍታት ብቻ ነው። ደህንነቱ ዝቅተኛ ነው።
+app.secret_key = 'Kq7bYxZ_3u9sP2hG_vR4wF1mJ_tL5cY_8oE'
 
 # Database Configuration (Neon/PostgreSQL or SQLite fallback)
 # የ DATABASE_URL ሚስጥር ከ Replit Secrets ይነበባል
@@ -33,8 +30,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-MIN_PAYOUT = 9.00 
-PAYOUT_AMOUNT_PER_TASK = 9.00 
+MIN_PAYOUT = 9.00
+PAYOUT_AMOUNT_PER_TASK = 9.00
 
 # --- 1. DATABASE MODELS (SQLAlchemy Models) ---
 
@@ -258,10 +255,10 @@ def dashboard():
             })
     
     return render_template('dashboard.html', 
-                           user=user, 
-                           my_tasks=my_tasks,
-                           available_task=available_task,
-                           current_task=current_task)
+                             user=user, 
+                             my_tasks=my_tasks,
+                             available_task=available_task,
+                             current_task=current_task)
 
 @app.route('/take_task', methods=['POST'])
 def take_task():
@@ -524,9 +521,9 @@ def admin_dashboard():
         total_users_count = User.query.filter_by(is_admin=False).count()
 
     return render_template('admin_dashboard.html', 
-                           pending_tasks_count=pending_tasks_count,
-                           total_inventory_count=total_inventory_count,
-                           total_users_count=total_users_count)
+                             pending_tasks_count=pending_tasks_count,
+                             total_inventory_count=total_inventory_count,
+                             total_users_count=total_users_count)
 
 
 @app.route('/admin/add_tasks', methods=['GET', 'POST'])
