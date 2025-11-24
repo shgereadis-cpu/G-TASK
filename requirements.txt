@@ -1,7 +1,7 @@
-Flask==2.3.3
-Werkzeug==2.3.7
-SQLAlchemy==1.4.49
-Flask-SQLAlchemy==3.0.5
-psycopg2-binary==2.9.9
+Flask==3.0.3
+Flask-SQLAlchemy==3.1.1
+SQLAlchemy==2.0.25 # ወደ 2.0.25 ከፍ ተደርጓል
 gunicorn==22.0.0
 python-dotenv==1.0.1
+psycopg2-binary==2.9.9 # የ psycopg2 የሊንክ ስህተቶችን ለመፍታት
+werkzeug==3.0.1
