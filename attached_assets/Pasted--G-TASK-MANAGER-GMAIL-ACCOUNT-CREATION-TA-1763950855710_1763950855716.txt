@@ -1,6 +1,6 @@
 # ======================================================
 # G-TASK MANAGER: GMAIL ACCOUNT CREATION TASK MANAGER
-# Version: 2.0 (FINAL BACKEND: PostgreSQL/SQLAlchemy)
+# Version: 3.0 (FINAL BACKEND: PostgreSQL + Ads System)
 # Author: Gemini (AI)
 # ======================================================
 
@@ -10,31 +10,21 @@ from flask import Flask, render_template, request, session, redirect, url_for, f
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func
-from dotenv import load_dotenv # ሚስጥሮችን ከአካባቢ ተለዋዋጮች (Secrets) ለመጫን
+from dotenv import load_dotenv
 
 # --- 0. ENV SETUP & CONFIGURATION ---
-load_dotenv() # በ Replit ላይ አውቶማቲክ ይሰራል
+load_dotenv() 
 app = Flask(__name__)
+app.secret_key = os.urandom(24) 
 
-# Secret key from environment (required for production)
-# Try SECRET_KEY first, fallback to SESSION_SECRET if available
-secret_key = os.environ.get('SECRET_KEY') or os.environ.get('SESSION_SECRET')
-if not secret_key:
-    raise RuntimeError("SECRET_KEY or SESSION_SECRET environment variable must be set. Please add SECRET_KEY to Replit Secrets.")
-app.secret_key = secret_key 
-
-# Database Configuration (Neon/PostgreSQL or SQLite fallback)
-# የ DATABASE_URL ሚስጥር ከ Replit Secrets ይነበባል
-database_url = os.environ.get('DATABASE_URL', 'sqlite:///g_task_manager.db')
-# Remove extra quotes and fix HTML encoding if present
-database_url = database_url.strip("'\"").replace('&amp;', '&')
-app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+# Database Configuration (Neon/PostgreSQL)
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-MIN_PAYOUT = 9.00 
-PAYOUT_AMOUNT_PER_TASK = 9.00 
+MIN_PAYOUT = 1.00 
+PAYOUT_AMOUNT_PER_TASK = 0.10 
 
 # --- 1. DATABASE MODELS (SQLAlchemy Models) ---
 
@@ -42,25 +32,23 @@ class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
-    password_hash = db.Column(db.String(256), nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
     total_earned = db.Column(db.Float, default=0.0)
     pending_payout = db.Column(db.Float, default=0.0)
     
-    # Relationships
     tasks = db.relationship('Task', backref='worker', lazy='dynamic')
     payouts = db.relationship('Payout', backref='requester', lazy='dynamic')
-    ad_views = db.relationship('AdView', backref='viewer', lazy='dynamic')
+    ad_views = db.relationship('AdView', backref='viewer', lazy='dynamic') # NEW
 
 class Inventory(db.Model):
     __tablename__ = 'inventory'
     id = db.Column(db.Integer, primary_key=True)
     gmail_username = db.Column(db.String(120), unique=True, nullable=False)
     gmail_password = db.Column(db.String(120), nullable=False)
-    status = db.Column(db.String(20), default='AVAILABLE') # AVAILABLE, ASSIGNED, COMPLETED
+    status = db.Column(db.String(20), default='AVAILABLE') 
     date_added = db.Column(db.DateTime, default=func.now())
     
-    # Relationship
     task = db.relationship('Task', backref='inventory_item', uselist=False)
 
 class Task(db.Model):
@@ -69,7 +57,7 @@ class Task(db.Model):
     inventory_id = db.Column(db.Integer, db.ForeignKey('inventory.id'), unique=True, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     completion_code = db.Column(db.String(100))
-    status = db.Column(db.String(20), default='PENDING') # PENDING, SUBMITTED, VERIFIED, REJECTED
+    status = db.Column(db.String(20), default='PENDING') 
     date_assigned = db.Column(db.DateTime, default=func.now())
     date_completed = db.Column(db.DateTime)
 
@@ -78,24 +66,24 @@ class Payout(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     amount = db.Column(db.Float, nullable=False)
-    status = db.Column(db.String(20), default='REQUESTED') # REQUESTED, PAID, REJECTED
-    payment_method = db.Column(db.String(50), nullable=False) # Telebirr, CBE, M-Pesa
-    recipient_name = db.Column(db.String(255), nullable=False)
-    payment_details = db.Column(db.String(255), nullable=False)
+    status = db.Column(db.String(20), default='REQUESTED') 
+    wallet_address = db.Column(db.String(255), nullable=False)
     date_requested = db.Column(db.DateTime, default=func.now())
     date_paid = db.Column(db.DateTime)
 
-# ማስታወቂያ ሞዴሎች (Ad Models)
+# NEW MODEL 1: ማስታወቂያዎች (Ads)
 class Ad(db.Model):
     __tablename__ = 'ads'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     embed_url = db.Column(db.String(255), nullable=False)
-    reward_amount = db.Column(db.Float, nullable=False)
+    reward_amount = db.Column(db.Float, nullable=False) 
     required_view_time = db.Column(db.Integer, default=60)
     is_active = db.Column(db.Boolean, default=True)
+    
     views = db.relationship('AdView', backref='ad_item', lazy='dynamic')
 
+# NEW MODEL 2: ማስታወቂያ የታየበት መዝገብ (Ad Views)
 class AdView(db.Model):
     __tablename__ = 'ad_views'
     id = db.Column(db.Integer, primary_key=True)
@@ -104,54 +92,18 @@ class AdView(db.Model):
     status = db.Column(db.String(20), default='PENDING') # PENDING, REWARDED
     date_viewed = db.Column(db.DateTime, default=func.now())
 
+
 # --- 2. DATABASE INIT & HELPER FUNCTIONS ---
 
 def init_db():
-    """የዳታቤዝ ሠንጠረዦችን ይፈጥራል እና ነባሪ አድሚን ያስገባል።"""
     with app.app_context():
-        # ሁሉንም ሞዴሎች በመጠቀም ሠንጠረዦችን ይፈጥራል
         db.create_all() 
         
-        # Add missing columns to payouts table
-        from sqlalchemy import text, inspect
-        try:
-            inspector = inspect(db.engine)
-            payouts_columns = [col['name'] for col in inspector.get_columns('payouts')]
-            
-            columns_to_add = [
-                ('payment_method', "VARCHAR(50) DEFAULT 'Telebirr'"),
-                ('recipient_name', "VARCHAR(255) DEFAULT ''"),
-                ('payment_details', "VARCHAR(255) DEFAULT ''"),
-            ]
-            
-            for col_name, col_def in columns_to_add:
-                if col_name not in payouts_columns:
-                    try:
-                        db.session.execute(text(f'ALTER TABLE payouts ADD COLUMN {col_name} {col_def}'))
-                        db.session.commit()
-                        print(f"Added {col_name} column to payouts table")
-                    except Exception as e:
-                        db.session.rollback()
-                        print(f"Column {col_name} already exists or error: {str(e)[:100]}")
-        except Exception as e:
-            print(f"Error checking columns: {str(e)[:100]}")
-        
-        # ነባሪ የአድሚን አካውንት - only if ADMIN_USERNAME and ADMIN_PASSWORD are set
-        admin_username = os.environ.get('ADMIN_USERNAME')
-        admin_password = os.environ.get('ADMIN_PASSWORD')
-        
-        if admin_username and admin_password:
-            if not User.query.filter_by(username=admin_username).first():
-                admin_user = User(
-                    username=admin_username, 
-                    password_hash=generate_password_hash(admin_password), 
-                    is_admin=True
-                )
-                db.session.add(admin_user)
-                db.session.commit()
-                print(f"Admin account created: {admin_username}")
-        else:
-            print("ማስጠንቀቂያ: ADMIN_USERNAME እና ADMIN_PASSWORD secrets አልተገኙም። የአድሚን account ለመፍጠር እነዚህን በSecrets ውስጥ ያስገቡ።")
+        if not User.query.filter_by(username='Admin').first():
+            admin_user = User(username='Admin', password_hash=generate_password_hash('password123'), is_admin=True)
+            db.session.add(admin_user)
+            db.session.commit()
+            print("---!!! ማስጠንቀቂያ: ነባሪ የአድሚን አካውንት ተፈጥሯል (Admin/password123)። !!!---")
 
 init_db()
 
@@ -232,30 +184,18 @@ def dashboard():
     with app.app_context():
         user = User.query.filter_by(id=user_id).first()
         
-        current_task_obj = Task.query.filter(Task.user_id == user_id, Task.status.in_(['PENDING', 'SUBMITTED'])).first()
-        
-        # Prepare current_task with inventory data
-        current_task = None
-        if current_task_obj:
-            inventory = Inventory.query.filter_by(id=current_task_obj.inventory_id).first()
-            current_task = {
-                'id': current_task_obj.id,
-                'gmail_username': inventory.gmail_username if inventory else '',
-                'gmail_password': inventory.gmail_password if inventory else ''
-            }
+        current_task = db.session.execute(db.select(Task, Inventory.gmail_username, Inventory.gmail_password)
+            .join(Inventory, Task.inventory_id == Inventory.id)
+            .filter(Task.user_id == user_id, Task.status.in_(['PENDING', 'SUBMITTED']))
+        ).first()
 
         available_task = Inventory.query.filter_by(status='AVAILABLE').first()
 
-        my_tasks_obj = Task.query.filter(Task.user_id == user_id).order_by(Task.date_assigned.desc()).all()
-        my_tasks = []
-        for task in my_tasks_obj:
-            inventory = Inventory.query.filter_by(id=task.inventory_id).first()
-            my_tasks.append({
-                'id': task.id,
-                'gmail_username': inventory.gmail_username if inventory else '',
-                'status': task.status,
-                'date_assigned': task.date_assigned
-            })
+        my_tasks = db.session.execute(db.select(Task, Inventory.gmail_username)
+            .join(Inventory, Task.inventory_id == Inventory.id)
+            .filter(Task.user_id == user_id)
+            .order_by(Task.date_assigned.desc())
+        ).scalars().all()
     
     return render_template('dashboard.html', 
                            user=user, 
@@ -296,15 +236,10 @@ def take_task():
 def submit_task(task_id):
     if not is_logged_in(): return redirect(url_for('login'))
     user_id = session['user_id']
+    completion_code = request.form.get('completion_code')
     
-    # Check if screenshot file is uploaded
-    if 'screenshot' not in request.files:
-        flash('ስክሪንሻት ምስል ማስገባት አለብዎት።', 'error')
-        return redirect(url_for('dashboard'))
-    
-    screenshot_file = request.files['screenshot']
-    if screenshot_file.filename == '':
-        flash('ስክሪንሻት ምስል ምረጥ።', 'error')
+    if not completion_code:
+        flash('የማረጋገጫ ኮዱን ማስገባት አለብዎት።', 'error')
         return redirect(url_for('dashboard'))
 
     with app.app_context():
@@ -319,14 +254,7 @@ def submit_task(task_id):
             return redirect(url_for('dashboard'))
 
         try:
-            # Save screenshot file to a secure location
-            os.makedirs('static/screenshots', exist_ok=True)
-            filename = f"task_{task_id}_{user_id}_{int(time.time())}.png"
-            screenshot_path = os.path.join('static/screenshots', filename)
-            screenshot_file.save(screenshot_path)
-            
-            # Store the filename as the completion code
-            task.completion_code = filename
+            task.completion_code = completion_code
             task.status = 'SUBMITTED'
             task.date_completed = func.now()
             db.session.commit()
@@ -338,7 +266,7 @@ def submit_task(task_id):
             
     return redirect(url_for('dashboard'))
 
-# 4.7. ክፍያ መጠየቅ (Payout Request)
+# 3.8. ክፍያ መጠየቅ (Payout Request)
 @app.route('/payout_request', methods=['GET', 'POST'])
 def payout_request():
     if not is_logged_in():
@@ -351,64 +279,33 @@ def payout_request():
         if request.method == 'POST':
             try:
                 amount = float(request.form['amount'])
-                recipient_name = request.form.get('recipient_name', '')
-                payment_method = request.form.get('payment_method', '')
-                payment_details = request.form.get('payment_details', '')
+                wallet_address = request.form['wallet_address']
                 
                 if amount < MIN_PAYOUT:
-                    flash(f'ዝቅተኛው የክፍያ መጠን ብር{MIN_PAYOUT:.2f} ነው።', 'error')
+                    flash(f'ዝቅተኛው የክፍያ መጠን ${MIN_PAYOUT:.2f} ነው።', 'error')
                 elif amount > user.pending_payout:
                     flash('ሊወጣ ከሚችለው ቀሪ ሂሳብ በላይ ጠይቀዋል።', 'error')
-                elif not recipient_name or len(recipient_name.strip()) == 0:
-                    flash('የአካውንት ባለቤት ስም ያስገቡ።', 'error')
-                elif not payment_method or len(payment_method.strip()) == 0:
-                    flash('ክፍያ ዘዴ ምረጥ።', 'error')
-                elif not payment_details or len(payment_details.strip()) == 0:
-                    flash('ክፍያ መረጃ ያስገቡ (ስልክ ቁጥር ወይም የባንክ ሂሳብ)።', 'error')
+                elif not wallet_address:
+                    flash('የUSDT Wallet አድራሻ ማስገባት አለብዎት።', 'error')
                 else:
-                    try:
-                        # 1. የክፍያ ጥያቄ ወደ payouts ሠንጠረዥ ያስገባል
-                        new_payout = Payout(
-                            user_id=user_id, 
-                            amount=amount, 
-                            recipient_name=recipient_name.strip(),
-                            payment_method=payment_method.strip(),
-                            payment_details=payment_details.strip()
-                        )
-                        db.session.add(new_payout)
-                        db.session.flush()
-                        
-                        # 2. ከሰራተኛው ቀሪ ሂሳብ ላይ ይቀንሳል
-                        user.pending_payout -= amount
-                        db.session.commit()
-                        
-                        flash(f'የ ብር{amount:.2f} ክፍያ ጥያቄ ገብቷል ({payment_method})። አስተዳዳሪ እስኪያረጋግጥ ይጠብቁ።', 'success')
-                        return redirect(url_for('dashboard'))
-                    except Exception as db_err:
-                        db.session.rollback()
-                        error_msg = str(db_err)
-                        print(f"Database error: {error_msg}")
-                        flash(f'ክፍያ ጥያቄ ሲወጣ ስህተት ተከስቷል። እባክዎ ደግሞ ይሞክሩ።', 'error')
+                    new_payout = Payout(user_id=user_id, amount=amount, wallet_address=wallet_address)
+                    db.session.add(new_payout)
+                    
+                    user.pending_payout -= amount
+                                         
+                    db.session.commit()
+                    flash(f'የ ${amount:.2f} ክፍያ ጥያቄ ገብቷል። አስተዳዳሪ እስኪያረጋግጥ ይጠብቁ።', 'success')
+                    return redirect(url_for('dashboard'))
 
             except ValueError:
                 flash('ትክክለኛ መጠን ያስገቡ።', 'error')
             except Exception as e:
                 db.session.rollback()
-                print(f"Error: {e}")
-                flash(f'ጥያቄውን በማስገባት ላይ ስህተት ተከስቷል።', 'error')
-        
-        # Convert user to dict to avoid detached instance error
-        user_data = {
-            'id': user.id,
-            'username': user.username,
-            'total_earned': user.total_earned,
-            'pending_payout': user.pending_payout
-        }
+                flash(f'ጥያቄውን በማስገባት ላይ ስህተት ተከስቷል: {e}', 'error')
                 
-        return render_template('payout_request.html', user=user_data)
+    return render_template('payout_request.html', user=user)
 
-
-# 3.9. የይለፍ ቃል መቀየር (Change Password)
+# 3.9. የይለፍ ቃል መቀየር (NEW)
 @app.route('/change_password', methods=['GET', 'POST'])
 def change_password():
     if not is_logged_in():
@@ -417,9 +314,9 @@ def change_password():
     user_id = session['user_id']
     
     if request.method == 'POST':
-        current_password = request.form.get('current_password')
-        new_password = request.form.get('new_password')
-        confirm_password = request.form.get('confirm_password')
+        current_password = request.form['current_password']
+        new_password = request.form['new_password']
+        confirm_password = request.form['confirm_password']
         
         with app.app_context():
             user = User.query.filter_by(id=user_id).first()
@@ -430,24 +327,26 @@ def change_password():
 
             if not check_password_hash(user.password_hash, current_password):
                 flash('ያስገቡት የአሁኑ የይለፍ ቃል ትክክል አይደለም።', 'error')
+            
             elif new_password != confirm_password:
                 flash('አዲሱ የይለፍ ቃል እና የማረጋገጫው ቃል አይመሳሰሉም።', 'error')
             elif len(new_password) < 6:
                 flash('አዲሱ የይለፍ ቃል ቢያንስ 6 ፊደላት መሆን አለበት።', 'error')
+            
             else:
                 try:
                     user.password_hash = generate_password_hash(new_password)
                     db.session.commit()
                     flash('የይለፍ ቃልዎ በተሳካ ሁኔታ ተቀይሯል።', 'success')
                     return redirect(url_for('dashboard'))
+                
                 except Exception as e:
                     db.session.rollback()
                     flash(f'የይለፍ ቃል በመቀየር ላይ ስህተት ተከስቷል: {e}', 'error')
                     
     return render_template('change_password.html')
 
-
-# 3.10. ማስታወቂያ ማየት (View Ads)
+# 3.10. ማስታወቂያ ማየት እና ገንዘብ ማግኘት (NEW)
 @app.route('/view_ads')
 def view_ads():
     if not is_logged_in():
@@ -464,8 +363,7 @@ def view_ads():
         
     return render_template('view_ads.html', available_ads=available_ads, viewed_today=viewed_today)
 
-
-# 3.11. ማስታወቂያ ሪወርድ ምዝገባ (Register Ad Reward)
+# 3.11. ማስታወቂያውን ከተመለከቱ በኋላ ክፍያውን መመዝገብ (NEW)
 @app.route('/register_ad_reward/<int:ad_id>', methods=['POST'])
 def register_ad_reward(ad_id):
     if not is_logged_in():
@@ -492,16 +390,18 @@ def register_ad_reward(ad_id):
             return jsonify({'success': False, 'message': 'You have already been rewarded for this ad today.'}), 400
             
         try:
+            # 1. ክፍያውን መጨመር
             user.pending_payout += ad.reward_amount
             user.total_earned += ad.reward_amount
             
+            # 2. ክፍያውን መመዝገብ
             new_view = AdView(ad_id=ad_id, user_id=user_id, status='REWARDED')
             db.session.add(new_view)
             db.session.commit()
             
             return jsonify({
                 'success': True, 
-                'message': f'ብር{ad.reward_amount:.2f} ወደ ቀሪ ሂሳብዎ ተጨምሯል!',
+                'message': f'${ad.reward_amount:.2f} successfully added to your balance!',
                 'new_balance': f'{user.pending_payout:.2f}'
             }), 200
             
@@ -578,7 +478,7 @@ def admin_add_tasks():
     return render_template('admin_add_tasks.html')
 
 
-# 4.3. ማስታወቂያዎች አስተዳደር (Manage Ads)
+# 4.3. ማስታወቂያዎችን መፍጠር እና ማስተዳደር (NEW)
 @app.route('/admin/manage_ads', methods=['GET', 'POST'])
 def admin_manage_ads():
     if not check_admin_access():
@@ -618,8 +518,7 @@ def admin_manage_ads():
     
     return render_template('admin_manage_ads.html', ads=ads)
 
-
-# 4.4. ማስታወቂያ ትቅልድ (Toggle Ad)
+# 4.4. የማስታወቂያ ሁኔታ መቀየር (አክቲቭ/ኢናክቲቭ) (NEW)
 @app.route('/admin/toggle_ad/<int:ad_id>', methods=['POST'])
 def admin_toggle_ad(ad_id):
     if not check_admin_access():
@@ -636,34 +535,23 @@ def admin_toggle_ad(ad_id):
     
     return redirect(url_for('admin_manage_ads'))
 
-
+# 4.5. ሥራዎችን ማረጋገጥ 
 @app.route('/admin/verify_tasks')
 def admin_verify_tasks():
     if not check_admin_access():
         return redirect(url_for('dashboard'))
 
     with app.app_context():
-        submitted_tasks_raw = db.session.execute(db.select(Task.id.label('task_id'), Task.completion_code, Task.date_completed, Inventory.gmail_username, User.username.label('worker_username'))
+        submitted_tasks = db.session.execute(db.select(Task.id.label('task_id'), Task.completion_code, Task.date_completed, Inventory.gmail_username, User.username.label('worker_username'))
             .join(Inventory, Task.inventory_id == Inventory.id)
             .join(User, Task.user_id == User.id)
             .filter(Task.status == 'SUBMITTED')
             .order_by(Task.date_completed.asc())
         ).all()
         
-        # Convert Row objects to dictionaries for template access
-        submitted_tasks = []
-        for row in submitted_tasks_raw:
-            submitted_tasks.append({
-                'task_id': row.task_id,
-                'completion_code': row.completion_code,
-                'date_completed': row.date_completed,
-                'gmail_username': row.gmail_username,
-                'worker_username': row.worker_username
-            })
-        
     return render_template('admin_verify_tasks.html', submitted_tasks=submitted_tasks)
 
-# 5.4. የሥራ ማረጋገጫ እርምጃ
+# 4.6. የሥራ ማረጋገጫ እርምጃ
 @app.route('/admin/action_task/<int:task_id>/<action>', methods=['POST'])
 def admin_action_task(task_id, action):
     if not check_admin_access():
@@ -685,7 +573,6 @@ def admin_action_task(task_id, action):
                 if inventory_item:
                     inventory_item.status = 'COMPLETED'
                 
-                # ክፍያውን በሲስተሙ አማካኝነት ወደ ንፁ ባላንስ ይጨምራል
                 if user:
                     user.pending_payout += PAYOUT_AMOUNT_PER_TASK
                     user.total_earned += PAYOUT_AMOUNT_PER_TASK
@@ -696,7 +583,7 @@ def admin_action_task(task_id, action):
             elif action == 'reject':
                 task.status = 'REJECTED'
                 if inventory_item:
-                    inventory_item.status = 'AVAILABLE' # ስራውን ነጻ ያደርገዋል
+                    inventory_item.status = 'AVAILABLE' 
                 
                 db.session.commit()
                 flash('ሥራው አልተቀበልም። ወደ ሥራ ክምችት ተመልሷል።', 'info')
@@ -711,35 +598,23 @@ def admin_action_task(task_id, action):
     return redirect(url_for('admin_verify_tasks'))
 
 
+# 4.7. የክፍያ አስተዳደር
 @app.route('/admin/payouts')
 def admin_payouts():
     if not check_admin_access():
         return redirect(url_for('dashboard'))
 
     with app.app_context():
-        payout_requests_raw = db.session.execute(db.select(Payout.id.label('payout_id'), Payout.amount, Payout.date_requested, Payout.recipient_name, Payout.payment_method, Payout.payment_details, User.username.label('worker_username'))
+        payout_requests = db.session.execute(db.select(Payout.id.label('payout_id'), Payout.amount, Payout.wallet_address, Payout.date_requested, User.username.label('worker_username'))
             .join(User, Payout.user_id == User.id)
             .filter(Payout.status == 'REQUESTED')
             .order_by(Payout.date_requested.asc())
         ).all()
-        
-        # Convert Row objects to dictionaries for template access
-        payout_requests = []
-        for row in payout_requests_raw:
-            payout_requests.append({
-                'payout_id': row.payout_id,
-                'amount': row.amount,
-                'date_requested': row.date_requested,
-                'recipient_name': row.recipient_name,
-                'payment_method': row.payment_method,
-                'payment_details': row.payment_details,
-                'worker_username': row.worker_username
-            })
     
     return render_template('admin_payouts.html', payout_requests=payout_requests)
 
 
-# 5.6. የክፍያ እርምጃ
+# 4.8. የክፍያ እርምጃ
 @app.route('/admin/action_payout/<int:payout_id>/<action>', methods=['POST'])
 def admin_action_payout(payout_id, action):
     if not check_admin_access():
@@ -764,7 +639,6 @@ def admin_action_payout(payout_id, action):
             elif action == 'reject':
                 payout.status = 'REJECTED'
                 
-                # ገንዘቡን ወደ pending_payout ይመልሳል
                 if user:
                     user.pending_payout += payout.amount
                 
@@ -783,8 +657,5 @@ def admin_action_payout(payout_id, action):
 
 # --- 5. RUN APP ---
 if __name__ == '__main__':
-    # Flask-SQLAlchemy ሁልጊዜ በ app_context ውስጥ መስራት አለበት
     with app.app_context():
-        # ይህ መስመር SQLiteን የምትሞክር ከሆነ ልትጠቀምበት ትችላለህ
-        # init_db() 
         app.run(debug=True, host='0.0.0.0', port=5000)
