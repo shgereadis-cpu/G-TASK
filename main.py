@@ -316,7 +316,7 @@ def payout_request():
                 elif amount > user.pending_payout:
                     flash('ሊወጣ ከሚችለው ቀሪ ሂሳብ በላይ ጠይቀዋል።', 'error')
                 elif not recipient_name:
-                    flash('ሞጋዜኛ ስም ያስገቡ።', 'error')
+                    flash('የአካውንት ባለቤት ስም ያስገቡ።', 'error')
                 elif not payment_method:
                     flash('ክፍያ ዘዴ ምረጥ።', 'error')
                 elif not payment_details:
