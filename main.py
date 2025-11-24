@@ -338,8 +338,16 @@ def payout_request():
             except Exception as e:
                 db.session.rollback()
                 flash(f'ጥያቄውን በማስገባት ላይ ስህተት ተከስቷል: {e}', 'error')
+        
+        # Convert user to dict to avoid detached instance error
+        user_data = {
+            'id': user.id,
+            'username': user.username,
+            'total_earned': user.total_earned,
+            'pending_payout': user.pending_payout
+        }
                 
-    return render_template('payout_request.html', user=user)
+        return render_template('payout_request.html', user=user_data)
 
 
 # --- 4. ADMIN ROUTES (አስተዳዳሪ መንገዶች) ---
