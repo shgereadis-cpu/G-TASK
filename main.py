@@ -369,40 +369,61 @@ def telegram_webhook():
             user_info = message.get('from', {})
             telegram_user_id = str(user_info.get('id'))
             
+            print(f"📱 Telegram message received: chat_id={chat_id}, user_id={telegram_user_id}, text={text}")
+            
             with app.app_context():
                 user = User.query.filter_by(telegram_id=telegram_user_id).first()
                 
-                if user and text:
+                if text:
                     if text.lower() in ['/start', '/help']:
-                        send_telegram_message(chat_id, 
-                            "Welcome to G-Task Manager!\n\n"
-                            "Available commands:\n"
-                            "/start - Show this message\n"
-                            "/balance - Check your balance\n"
-                            "/tasks - View your tasks\n"
-                            "/help - Show help")
+                        if user:
+                            send_telegram_message(chat_id, 
+                                "Welcome back to G-Task Manager!\n\n"
+                                "Available commands:\n"
+                                "/balance - Check your earnings\n"
+                                "/tasks - View your tasks\n"
+                                "/help - Show this message")
+                        else:
+                            send_telegram_message(chat_id,
+                                "Welcome to G-Task Manager! 👋\n\n"
+                                "To get started, please click the Telegram Login button on our website:\n"
+                                "https://80920867-bcfe-40c3-8c97-a2e022a1c795-00-2wgpp1vtr7kmu.riker.replit.dev\n\n"
+                                "After linking your account, you can use:\n"
+                                "/balance - Check your earnings\n"
+                                "/tasks - View your tasks")
                     
-                    elif text.lower() == '/balance':
+                    elif text.lower() == '/balance' and user:
                         send_telegram_message(chat_id, 
-                            f"Your Balance:\n"
+                            f"💰 Your Balance:\n"
                             f"Earned: ${user.total_earned:.2f}\n"
-                            f"Pending: ${user.pending_payout:.2f}")
+                            f"Pending Payout: ${user.pending_payout:.2f}")
                     
-                    elif text.lower() == '/tasks':
+                    elif text.lower() == '/tasks' and user:
                         tasks_count = Task.query.filter_by(user_id=user.id).count()
                         completed_count = Task.query.filter(
                             Task.user_id == user.id, 
                             Task.status == 'VERIFIED'
                         ).count()
                         send_telegram_message(chat_id,
-                            f"Your Tasks:\n"
-                            f"Total: {tasks_count}\n"
-                            f"Completed: {completed_count}")
+                            f"📋 Your Tasks:\n"
+                            f"Total Assigned: {tasks_count}\n"
+                            f"Completed & Verified: {completed_count}")
+                    
+                    elif text.lower() == '/balance' and not user:
+                        send_telegram_message(chat_id, "Please link your Telegram account first using the /start command.")
+                    
+                    elif text.lower() == '/tasks' and not user:
+                        send_telegram_message(chat_id, "Please link your Telegram account first using the /start command.")
+                    
+                    elif user:
+                        send_telegram_message(chat_id, f"Unknown command: {text}\n\nUse /help to see available commands.")
         
         return jsonify({'status': 'ok'}), 200
     
     except Exception as e:
-        print(f"Webhook error: {str(e)}")
+        print(f"❌ Webhook error: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 def send_telegram_message(chat_id, text):
@@ -410,14 +431,23 @@ def send_telegram_message(chat_id, text):
     
     TELEGRAM_BOT_TOKEN = os.environ.get('BOT_TOKEN')
     if not TELEGRAM_BOT_TOKEN:
+        print("❌ BOT_TOKEN not configured!")
         return False
     
     try:
         api_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+        print(f"📤 Sending message to chat_id={chat_id}: {text[:50]}...")
         response = requests.post(api_url, data={'chat_id': chat_id, 'text': text})
+        print(f"📨 Telegram API response: status={response.status_code}, body={response.text[:200]}")
+        if response.status_code == 200:
+            print(f"✅ Message sent successfully!")
+        else:
+            print(f"⚠️ Message sent but status code is {response.status_code}")
         return response.status_code == 200
     except Exception as e:
-        print(f"Error sending Telegram message: {str(e)}")
+        print(f"❌ Error sending Telegram message: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return False
 
 @app.route('/telegram/set-webhook', methods=['POST', 'GET'])
