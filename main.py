@@ -347,6 +347,33 @@ def telegram_login_check():
         flash('በ Telegram በተሳካ ሁኔታ ገብተዋል!', 'success')
         return redirect(url_for('dashboard'))
 
+def set_telegram_bot_commands():
+    """Set bot commands menu in Telegram"""
+    import requests
+    
+    TELEGRAM_BOT_TOKEN = os.environ.get('BOT_TOKEN')
+    if not TELEGRAM_BOT_TOKEN:
+        print("❌ BOT_TOKEN not configured!")
+        return False
+    
+    try:
+        api_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/setMyCommands"
+        commands = [
+            {"command": "balance", "description": "💰 Check your earnings"},
+            {"command": "tasks", "description": "📋 View your tasks"},
+            {"command": "help", "description": "❓ Show available commands"}
+        ]
+        response = requests.post(api_url, json={"commands": commands})
+        if response.status_code == 200:
+            print(f"✅ Bot commands menu set successfully!")
+            return True
+        else:
+            print(f"⚠️ Failed to set bot commands: {response.text}")
+            return False
+    except Exception as e:
+        print(f"❌ Error setting bot commands: {str(e)}")
+        return False
+
 def auto_register_telegram_user(telegram_user_id, first_name):
     """Auto-register a new Telegram user with a generated username and password"""
     import string
@@ -413,10 +440,7 @@ def telegram_webhook():
                         if user:
                             send_telegram_message_with_button(chat_id,
                                 "Welcome back to G-Task Manager! 👋\n\n"
-                                "Available commands:\n"
-                                "/balance - Check your earnings\n"
-                                "/tasks - View your tasks\n"
-                                "/help - Show this message",
+                                "Use the menu below to access commands.",
                                 "🌐 Visit Website",
                                 "https://80920867-bcfe-40c3-8c97-a2e022a1c795-00-2wgpp1vtr7kmu.riker.replit.dev")
                         else:
@@ -426,10 +450,7 @@ def telegram_webhook():
                                     f"🎉 Welcome to G-Task Manager! {first_name}\n\n"
                                     f"Your account has been created automatically!\n\n"
                                     f"Username: {new_user.username}\n\n"
-                                    f"Available commands:\n"
-                                    f"/balance - Check your earnings\n"
-                                    f"/tasks - View your tasks\n"
-                                    f"/help - Show this message",
+                                    f"Use the menu below to access commands.",
                                     "🌐 Visit Website",
                                     "https://80920867-bcfe-40c3-8c97-a2e022a1c795-00-2wgpp1vtr7kmu.riker.replit.dev")
                             else:
@@ -548,6 +569,7 @@ def telegram_set_webhook():
         
         if result.get('ok'):
             print(f"✅ Telegram webhook set successfully to: {WEBHOOK_URL}")
+            set_telegram_bot_commands()
             return jsonify({'status': 'success', 'message': 'Webhook set successfully', 'webhook_url': WEBHOOK_URL}), 200
         else:
             error_msg = result.get('description', 'Unknown error')
@@ -557,6 +579,14 @@ def telegram_set_webhook():
     except Exception as e:
         print(f"Error setting webhook: {str(e)}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/telegram/set-commands', methods=['POST', 'GET'])
+def telegram_set_commands_route():
+    result = set_telegram_bot_commands()
+    if result:
+        return jsonify({'status': 'success', 'message': 'Bot commands set successfully'}), 200
+    else:
+        return jsonify({'status': 'error', 'message': 'Failed to set bot commands'}), 400
 
 @app.route('/dashboard')
 def dashboard():

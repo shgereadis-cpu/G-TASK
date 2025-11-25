@@ -95,7 +95,14 @@ gunicorn --bind=0.0.0.0:5000 --reuse-port main:app
 
 ## Recent Changes
 
-### 2025-11-25: Auto-Registration for Telegram Users (Latest)
+### 2025-11-25: Bot Menu Commands (Latest)
+- Moved commands from welcome message to bot menu
+- Users see `/balance`, `/tasks`, `/help` in Telegram command menu with descriptions
+- Cleaner welcome messages without command clutter
+- Commands appear when users click the "/" button in Telegram chat
+- Professional and intuitive user experience
+
+### 2025-11-25: Auto-Registration for Telegram Users
 - New Telegram users are automatically registered when they send `/start` to the bot
 - Username generated from: `FirstName_TelegramID` with collision handling
 - Random password generated for security
