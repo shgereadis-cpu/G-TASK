@@ -9,6 +9,7 @@ import time
 import hashlib
 import hmac
 import secrets
+import requests
 from datetime import datetime, timedelta
 from flask import Flask, render_template, request, session, redirect, url_for, flash, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -20,9 +21,8 @@ from dotenv import load_dotenv # ሚስጥሮችን ከአካባቢ ተለዋዋ
 load_dotenv() # በ Replit ላይ አውቶማቲክ ይሰራል
 app = Flask(__name__)
 
-# !!! [ማስተካከያ] SECRET KEYን በቀጥታ ኮድ ውስጥ ማስገባት !!!
-# ይህ ለጊዜያዊ Deployment ስህተትን ለመፍታት ብቻ ነው። ደህንነቱ ዝቅተኛ ነው።
-app.secret_key = 'Kq7bYxZ_3u9sP2hG_vR4wF1mJ_tL5cY_8oE'
+# SECRET KEY - Render-compatible (from environment variables)
+app.secret_key = os.environ.get('SECRET_KEY', 'Kq7bYxZ_3u9sP2hG_vR4wF1mJ_tL5cY_8oE')
 
 # Database Configuration (Neon/PostgreSQL or SQLite fallback)
 # የ DATABASE_URL ሚስጥር ከ Replit Secrets ይነበባል
@@ -667,30 +667,30 @@ def set_telegram_webhook():
         print(f"❌ Error setting webhook: {str(e)}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
-import requests
-
 @app.route('/webhook', methods=['POST'])
 def webhook_handler():
-    # ቴሌግራም የላከውን የ JSON ውሂብ ያግኙ
-    data = request.get_json()
-    
-    # ቴሌግራም በትክክል ለመገናኘት 200 OK ምላሽ ብቻ ይፈልጋል
-    if not data:
-        return 'ok', 200 
-    
-    # እዚህ ላይ የመልዕክት ማስኬጃ ኮድ ይገባል
-    # ምሳሌ:
-    # if 'message' in data:
-    #     handle_message(data['message'])
+    """Render-compatible Telegram webhook handler"""
+    try:
+        # ቴሌግራም የላከውን የ JSON ውሂብ ያግኙ
+        data = request.get_json()
+        
+        if not data:
+            print("⚠️ Empty webhook data received")
+            return jsonify({'status': 'ok'}), 200 
+        
+        print(f"📥 Webhook received from Telegram: {data}")
+        
+        # አስፈላጊ ከሆነ: እዚህ ላይ የመልዕክት ማስኬጃ ኮድ ይገባል
+        # if 'message' in data:
+        #     handle_message(data['message'])
 
-    # ቴሌግራምን ማርካት ወሳኝ ነው!
-    return 'ok', 200
-
-# አስፈላጊ ከሆነ: handle_message ተግባርን ይግለጹ (ይህ ከቴሌግራም የሚመጡ ትዕዛዞችን የሚይዝ ነው)
-# def handle_message(message):
-#     chat_id = message['chat']['id']
-#     text = message['text']
-#     # ... ለ /start, /help, ወዘተ የሚሰጡ ምላሾችን እዚህ ይጨምሩ
+        # ቴሌግራምን ማርካት ወሳኝ ነው! (Always return 200)
+        return jsonify({'status': 'ok'}), 200
+        
+    except Exception as e:
+        print(f"❌ Webhook error: {str(e)}")
+        # Still return 200 to prevent Telegram from retrying
+        return jsonify({'status': 'error', 'message': str(e)}), 200
 
 @app.route('/dashboard')
 def dashboard():
@@ -1215,4 +1215,7 @@ if __name__ == '__main__':
     with app.app_context():
         # ይህ መስመር SQLiteን የምትሞክር ከሆነ ልትጠቀምበት ትችላለህ
         # init_db() 
-        app.run(debug=True, host='0.0.0.0', port=5000)
+        # Render-compatible: Check if running in production or development
+        is_production = os.environ.get('ENVIRONMENT') == 'production' or os.environ.get('RENDER') == 'true'
+        debug_mode = not is_production
+        app.run(debug=debug_mode, host='0.0.0.0', port=5000)

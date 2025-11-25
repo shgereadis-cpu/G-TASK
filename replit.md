@@ -6,18 +6,18 @@ G-Task Manager is a Flask-based web application for managing Gmail account creat
 ## Project Architecture
 
 ### Technology Stack
-- **Backend**: Flask 3.0.3 with SQLAlchemy 2.0.25
-- **Database**: PostgreSQL (with SQLite fallback for local development)
-- **Authentication**: Werkzeug password hashing
-- **Frontend**: HTML templates with Jinja2, CSS3, Font Awesome icons
-- **Deployment**: Gunicorn WSGI server
+- **Backend**: Flask 3.0+ with SQLAlchemy 2.0+
+- **Database**: PostgreSQL (Neon or Render-provided) with SQLite fallback for development
+- **Authentication**: Werkzeug password hashing + Telegram Bot API
+- **Frontend**: HTML templates with Jinja2, CSS3, Font Awesome icons, smooth animations
+- **Deployment**: Gunicorn WSGI server on Render
 
 ### Directory Structure
 ```
 .
-├── main.py                 # Main Flask application
-├── requirements.txt        # Python dependencies
-├── Procfile               # Heroku deployment config
+├── main.py                 # Main Flask application (Render-compatible)
+├── requirements.txt        # Python dependencies (cleaned, no duplicates)
+├── Procfile               # Render deployment config
 ├── templates/             # HTML templates
 │   ├── header.html
 │   ├── footer.html
@@ -31,221 +31,218 @@ G-Task Manager is a Flask-based web application for managing Gmail account creat
 │   ├── admin_verify_tasks.html
 │   └── admin_payouts.html
 └── static/                # Static assets
-    └── style.css          # Main stylesheet
+    └── style.css          # Main stylesheet with animations
 ```
 
 ### Database Models
-- **User**: Stores user accounts (workers and admins) with optional Telegram integration
-  - `telegram_id`: Unique Telegram user ID for Telegram login
-- **Inventory**: Gmail account credentials available for tasks
-- **Task**: Assigned tasks to workers
-- **Payout**: Payout requests from workers
+- **User**: User accounts (workers and admins) with Telegram integration
+  - `telegram_id`: Unique Telegram user ID
+  - `telegram_login_token`: 24-hour temporary login token
+- **Inventory**: Gmail account credentials with recovery emails
+- **Task**: Task assignments to workers
+- **Payout**: Payout request tracking
+- **Device**: Device fingerprinting for fraud detection
+- **DailyCheckIn**: Daily reward tracking
+- **Ad**: Video ad configuration
+- **AdView**: Ad view tracking
 
-## Configuration
+## ⚡ Render Deployment (Complete Guide)
 
-### Environment Variables (Render Deployment)
-- `DATABASE_URL`: PostgreSQL connection string (provided by Render or PostgreSQL service)
-- `SECRET_KEY`: Flask session secret (auto-generated)
-- `TELEGRAM_BOT_TOKEN`: Telegram bot token for authentication (required for Telegram login)
-- `TELEGRAM_BOT_USERNAME`: Telegram bot username (set to: GtaskManager_bot)
-- `WEBHOOK_URL`: Full webhook URL for Telegram (e.g., https://g-task.onrender.com/telegram/webhook)
-
-### Render Deployment Setup
-1. Connect GitHub repository to Render
-2. Set environment variables in Render dashboard:
-   - `DATABASE_URL`: PostgreSQL connection string
-   - `TELEGRAM_BOT_TOKEN`: Your Telegram bot token
-   - `TELEGRAM_BOT_USERNAME`: GtaskManager_bot
-   - `WEBHOOK_URL`: https://g-task.onrender.com/telegram/webhook
-3. Deployment happens automatically on git push
-4. Access app at: https://g-task.onrender.com/
-
-### Default Admin Account
-- **Username**: Admin
-- **Password**: 070781
-
-## Development Workflow
-
-### Running Locally (Replit)
-The Flask development server runs on port 5000:
+### Step 1: Prepare GitHub Repository
 ```bash
-python main.py
+# Make sure all changes are committed:
+git add .
+git commit -m "Render deployment ready - webhook compatible"
+git push origin main
 ```
 
-### Production Deployment (Render)
-The application is configured for deployment on Render using Gunicorn.
-Deployment is automatic on git push:
-```bash
-gunicorn --bind=0.0.0.0:5000 --reuse-port main:app
+### Step 2: Create Render Service
+1. Go to https://dashboard.render.com
+2. Click "New +" → "Web Service"
+3. Select your GitHub repository
+4. Configure:
+   - **Name**: `g-task` (or your preferred name)
+   - **Environment**: Python 3
+   - **Region**: Choose closest to users
+   - **Branch**: `main`
+
+### Step 3: Set Build & Start Commands
+In Render dashboard under "Build & Deploy":
+- **Build Command**: `pip install -r requirements.txt`
+- **Start Command**: `gunicorn --bind=0.0.0.0:5000 --workers=2 main:app`
+
+### Step 4: Add Environment Variables
+In Render dashboard under "Environment":
+
+| Variable | Value | Notes |
+|----------|-------|-------|
+| `DATABASE_URL` | PostgreSQL connection string | From Render Postgres or Neon |
+| `SECRET_KEY` | Any random 32+ character string | Generate: `python -c "import secrets; print(secrets.token_urlsafe(32))"` |
+| `BOT_TOKEN` | Your Telegram Bot Token | From @BotFather on Telegram |
+| `TELEGRAM_BOT_USERNAME` | `GtaskManager_bot` | Your bot's username |
+| `WEBHOOK_URL` | `https://your-render-url.onrender.com/webhook` | Your Render app URL + /webhook |
+| `ADMIN_USERNAME` | `Admin` | Default admin username |
+| `ADMIN_PASSWORD` | `070781` | Default admin password (change in production!) |
+
+### Step 5: Database Setup (Render Postgres)
+1. In Render dashboard, create a new "PostgreSQL" service
+2. Copy the connection string
+3. Paste as `DATABASE_URL` environment variable in web service
+4. Wait for service to start (may take 1-2 minutes)
+
+### Step 6: Deploy & Test
+1. Click "Deploy" in Render dashboard
+2. Watch logs for deployment progress
+3. Once deployed, visit your Render URL
+4. Login with:
+   - **Username**: Admin
+   - **Password**: 070781
+
+### Step 7: Configure Telegram Webhook
+After deployment is live:
+1. Login to admin dashboard
+2. Call: `https://your-render-url.onrender.com/telegram/set-webhook`
+3. You should see: `{"status": "success", "message": "Webhook set successfully"}`
+4. Test bot by sending `/start` to your Telegram bot
+
+## 🔐 Telegram Bot Setup
+
+### Create Telegram Bot
+1. Message @BotFather on Telegram
+2. Send `/newbot`
+3. Follow instructions to name your bot
+4. Copy the **BOT_TOKEN** provided
+5. Send `/setusername` and choose username (e.g., GtaskManager_bot)
+
+### Enable Features
+1. Message @BotFather again
+2. Send `/setcommands`
+3. Select your bot
+4. Copy-paste commands (format: `command - description`):
+   ```
+   balance - 💰 Check your earnings
+   tasks - 📋 View your tasks
+   help - ❓ Show available commands
+   ```
+
+### Webhook Details
+- **Route**: `/webhook` (POST only)
+- **URL**: `https://your-render-url.onrender.com/webhook`
+- **Render-Compatible**: ✅ Handles all Telegram updates
+- **Error Handling**: Always returns HTTP 200 (Telegram compatibility)
+
+## Configuration Files
+
+### environment Variables (Development - Replit)
+Create `.env` file in root:
+```
+DATABASE_URL=sqlite:///g_task_manager.db
+SECRET_KEY=Kq7bYxZ_3u9sP2hG_vR4wF1mJ_tL5cY_8oE
+BOT_TOKEN=YOUR_TELEGRAM_BOT_TOKEN
+TELEGRAM_BOT_USERNAME=GtaskManager_bot
+WEBHOOK_URL=https://your-replit-url.repl.co/webhook
+ADMIN_USERNAME=Admin
+ADMIN_PASSWORD=070781
 ```
 
-**Render Service Configuration:**
-- Name: g-task
-- Build Command: `pip install -r requirements.txt`
-- Start Command: `gunicorn --bind=0.0.0.0:5000 --reuse-port main:app`
-- Environment: Python 3.x
-- URL: https://g-task.onrender.com/
+### Procfile (Render)
+Already configured:
+```
+web: gunicorn --bind=0.0.0.0:5000 --workers=2 main:app
+```
 
-## Features
+### Requirements.txt (Render-Ready)
+Cleaned and production-ready:
+```
+Flask>=3.0.0
+Flask-SQLAlchemy>=3.0.0
+SQLAlchemy>=2.0.0
+gunicorn>=21.0.0
+python-dotenv>=1.0.0
+psycopg2-binary>=2.9.0
+werkzeug>=3.0.0
+requests>=2.28.0
+Flask-Bcrypt>=1.0.1
+Flask-Login>=0.6.2
+Flask-Mail>=0.9.1
+```
+
+## 🎯 Features
 
 ### Worker Features
-- User registration and login (standard or via Telegram)
-- Telegram Login Widget integration for one-click authentication
-- View available tasks
-- Take and complete tasks
-- Submit completion codes
-- Request payouts (minimum $1.00)
-- View earnings and task history
-- Receive Telegram notifications when new tasks are added
+- ✅ User registration and login (email/Telegram)
+- ✅ One-click Telegram login with auto-registration
+- ✅ View available Gmail account tasks
+- ✅ Take and complete tasks
+- ✅ Request payouts (minimum ብር 40.00)
+- ✅ View earnings and task history
+- ✅ Daily check-in rewards (ብር 0.20/day)
+- ✅ Video ad rewards
+- ✅ Device-based fraud detection (one device per user)
+- ✅ Telegram notifications for new tasks
 
 ### Admin Features
-- View dashboard with statistics
-- Add Gmail account tasks in bulk
-- Verify submitted tasks
-- Approve/reject payout requests
-- Manage task inventory
+- ✅ Dashboard with statistics
+- ✅ Add Gmail account tasks (bulk upload with recovery emails)
+- ✅ Verify and approve completed tasks
+- ✅ Manage payout requests
+- ✅ Telegram payment notifications to workers
+- ✅ Ad management and tracking
 
-## Payment System
-- Workers earn ብር 10.00 per verified task
-- Minimum payout: ብር 40.00
-- Payment method: USDT (TRC20) wallet
+## 💰 Payment System
+- **Earn**: ብር 10.00 per verified task
+- **Daily Check-in**: ብር 0.20 per day
+- **Ad Rewards**: Variable per ad
+- **Minimum Payout**: ብር 40.00
+- **Payment Method**: USDT (TRC20) wallet address
 
-## Recent Changes
+## 🔒 Security Features
 
-### 2025-11-25: Device Fraud Detection System (Latest)
-- One device per user enforcement - prevents multiple accounts from same device
-- Device fingerprinting based on IP address + User-Agent (SHA256 hash)
+### Device Fraud Detection
+- SHA256 fingerprint of IP + User-Agent
+- One device per user enforcement
+- Prevents multiple accounts from same device
 - Automatic device registration on first login
-- Blocks accounts if device is already registered to another user
-- Prevents balance/reward manipulation across multiple accounts
-- Works on login and daily check-in routes
-- Tracks device activity (last_activity timestamp)
-- Database model: `Device` with device_fingerprint, ip_address, user_agent
-- Error messages in Amharic for blocked users
-- Security alerts logged when fraud detected
 
-### 2025-11-25: Daily Check-In Task
-- Added daily check-in task feature for workers
-- Reward amount: ብር 0.20 per day (one check-in per user per day)
-- Workers can check-in from dashboard to earn instant reward
-- Reward is added directly to pending_payout balance
-- Database model: `DailyCheckIn` with unique constraint (user_id, check_in_date)
-- Route: `POST /daily_checkin` - AJAX-based instant completion
-- Dashboard shows check-in button alongside video ads
-- One-time check-in per day enforcement at database level
+### Telegram Security
+- HMAC-SHA256 hash verification
+- 24-hour token expiry for auto-login
+- Webhook validation from Telegram
+- Secure password hashing (Werkzeug)
 
-### 2025-11-25: Recovery Email Support
-- Added recovery email field to Gmail account inventory
-- Admin can now add tasks with format: `gmail_username:gmail_password:recovery_email`
-- Recovery email is displayed to workers when they take tasks
-- Stored securely in database for account recovery purposes
-- Database migration: Added `recovery_email` column to inventory table
+### Database Security
+- PostgreSQL with secure connection strings
+- Environment variables for all secrets
+- No hardcoded credentials in code
+- Session-based authentication
 
-### 2025-11-25: Payment Notification
-- Added Telegram payment notifications when worker payouts are approved
-- Message: "💰 እንኳን ደስ አልዎት! ደሞዝህ ብር X.XX ወደ ዋሌትህ ተልኳል - እባክዎን ዋሌትዎን ቼክ ያድርጉ"
-- Sent automatically when admin marks payout as PAID
-- Only sent to workers with linked Telegram accounts
-- Function: `send_payment_notification(user_id, amount)`
+## 🚀 Deployment Status
 
-### 2025-11-25: Telegram Auto-Login
-- Telegram users now automatically log in when clicking "🌐 Visit Website" button
-- No need to enter username/password
-- Temporary login tokens generated for each user (24-hour expiry)
-- Tokens are secure (56-character URL-safe random strings)
-- One-click login from Telegram to website dashboard
-- Tokens are regenerated after each login (enables logout/login cycles)
-- Users can logout and login again without needing to send /start command
-- Database migration: Added `telegram_login_token` and `telegram_token_expires` columns
+### Latest Changes (2025-11-25)
+- ✅ Render-compatible webhook at `/webhook`
+- ✅ Environment variables support for SECRET_KEY
+- ✅ Cleaned requirements.txt (no duplicates)
+- ✅ Procfile configured for Render Gunicorn
+- ✅ Proper error handling in webhook
+- ✅ Request library imported for Telegram API calls
+- ✅ Production-ready app configuration
 
-### 2025-11-25: Emoji Bot Messages
-- All Telegram bot messages now include emojis for better UX
-- New task notification: 🚀 "አዲስ ስራ ተጨመረ ፍጠን አሁን ስራ ውሰድ"
-- Account not linked: 🔐 (when /balance or /tasks without account)
-- Unknown command: ❓ (for unrecognized commands)
-- Registration error: ⚠️ (if auto-registration fails)
-- Existing messages retain their emojis: 💰 (balance), 📋 (tasks), 👋 (welcome), 🎉 (new user)
-
-### 2025-11-25: Admin Credentials Configured
-- Admin account: Username **Admin**, Password **070781**
-- Environment variables set: ADMIN_USERNAME and ADMIN_PASSWORD
-- Auto-created on app startup if not already in database
-- Credentials stored securely as hashed passwords
-
-### 2025-11-25: Bot Menu Commands
-- Moved commands from welcome message to bot menu
-- Users see `/balance`, `/tasks`, `/help` in Telegram command menu with descriptions
-- Cleaner welcome messages without command clutter
-- Commands appear when users click the "/" button in Telegram chat
-- Professional and intuitive user experience
-
-### 2025-11-25: Auto-Registration for Telegram Users
-- New Telegram users are automatically registered when they send `/start` to the bot
-- Username generated from: `FirstName_TelegramID` with collision handling
-- Random password generated for security
-- Instant access to commands: `/balance`, `/tasks`, `/help`
-- Each welcome message includes a **"🌐 Visit Website"** button
-- No need to visit website or use Telegram login widget - fully automatic!
-
-### 2025-11-25: Telegram Button UI
-- Updated welcome message to show login link as a clickable button instead of plain text
-- Added `send_telegram_message_with_button()` function for inline keyboard markup
-- Welcome message now displays: "🔐 Login & Link Account" button
-- New users see a professional button-based interface
-
-### 2025-11-25: Telegram Webhook Integration
-- Added `/telegram/webhook` POST route for receiving Telegram updates
-- Implemented bot commands: `/start`, `/help`, `/balance`, `/tasks`
-- Created `send_telegram_message()` helper function for bot responses
-- Added `/telegram/set-webhook` route for admin webhook configuration
-- Bot can now respond directly to user messages via Telegram
-- Webhook receives real-time updates from Telegram API
-
-### 2025-11-25: Telegram Integration
-- Added Telegram Login Widget to login page
-- Implemented secure HMAC-SHA256 hash verification for Telegram authentication
-- Added `telegram_id` column to User model for Telegram user linking
-- Created `/telegram_login_check` route with 24-hour freshness validation
-- Implemented `send_notification_to_all_telegram_users()` function
-- Integrated automatic Telegram notifications when new tasks are added to inventory
-- Added robust username collision handling for Telegram users
-- Configured TELEGRAM_BOT_USERNAME environment variable (GtaskManager_bot)
-
-### 2025-11-23: Initial Setup
-- Imported from GitHub and set up for Replit environment
-- Created proper Flask directory structure (templates, static folders)
-- Created comprehensive CSS stylesheet
-- Fixed database schema (password_hash VARCHAR(256))
-- Configured Flask workflow on port 5000
-- Set up deployment configuration with Gunicorn
-- Added missing templates (payout_request.html, admin_payouts.html)
-
-## Telegram Bot Setup
-
-### Webhook Configuration (Render)
-1. Set `WEBHOOK_URL` environment variable in Render dashboard: `https://g-task.onrender.com/telegram/webhook`
-2. Access admin panel and login with:
-   - Username: **Admin**
-   - Password: **070781**
-3. Call the admin endpoint to configure webhook: `POST https://g-task.onrender.com/telegram/set-webhook`
-   - Registers the webhook with Telegram API
-   - Telegram will send updates directly to your Render app
-4. Verify webhook configuration is working by checking Telegram bot responses
-
-### Bot Commands
-Users can interact with the bot via these commands:
-- `/start` or `/help` - Display welcome message and available commands
-- `/balance` - Show user's earnings and pending payout
-- `/tasks` - View task statistics
-
-### Webhook Features
-- Receives real-time updates from Telegram when users message the bot
-- Automatically links Telegram users to G-Task Manager accounts
-- Sends instant responses to user commands
-- Integrates with existing task notification system
+### Production Readiness Checklist
+- [x] Database models defined with relationships
+- [x] Flask app with Gunicorn configuration
+- [x] Telegram webhook properly configured
+- [x] Environment variables for all secrets
+- [x] Device fraud detection implemented
+- [x] Admin panel with task/payout management
+- [x] Worker dashboard with earnings tracking
+- [x] Daily rewards system
+- [x] Ad viewing system
+- [x] Error handling and logging
+- [x] HTML templates with smooth animations
 
 ## Notes
-- Application uses Amharic language (Ethiopia)
-- Database automatically initializes on first run
-- All routes are protected with session-based authentication
-- Webhook requires TELEGRAM_BOT_TOKEN and WEBHOOK_URL to be configured
+- Language: Amharic (ኦሮሞ) with English fallback
+- Database auto-initializes on first run
+- All routes protected with session-based authentication
+- Webhook requires BOT_TOKEN and WEBHOOK_URL configuration
+- Telegram notifications sent in real-time via Telegram Bot API

@@ -1,26 +1,11 @@
-# የ Werkzeug ግጭትን ለመፍታት ስሪቶችን እናነሳለን
-# እና pip የቅርብ ጊዜውን የተረጋጋ ስሪት እንዲያገኝ እንፈቅዳለን።
-Flask
-Flask-SQLAlchemy
-SQLAlchemy 
-gunicorn
-python-dotenv
-psycopg2-binary
-werkzeug
-requests  # <--- አዲስ የተጨመረ: ከቴሌግራም API ጋር ለመገናኘት
-
-# የእርስዎ ሌሎች ጥገኞች
-Flask-Bcrypt
-Flask-Login
-Flask-Mail
-Flask
-Flask-Bcrypt
-Flask-Login
-Flask-Mail
-Flask-SQLAlchemy
-gunicorn
-psycopg2-binary
-python-dotenv
-requests
-SQLAlchemy
-werkzeug
+Flask>=3.0.0
+Flask-SQLAlchemy>=3.0.0
+SQLAlchemy>=2.0.0
+gunicorn>=21.0.0
+python-dotenv>=1.0.0
+psycopg2-binary>=2.9.0
+werkzeug>=3.0.0
+requests>=2.28.0
+Flask-Bcrypt>=1.0.1
+Flask-Login>=0.6.2
+Flask-Mail>=0.9.1
