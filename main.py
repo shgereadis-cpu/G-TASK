@@ -411,23 +411,27 @@ def telegram_webhook():
                 if text:
                     if text.lower() in ['/start', '/help']:
                         if user:
-                            send_telegram_message(chat_id, 
-                                "Welcome back to G-Task Manager!\n\n"
+                            send_telegram_message_with_button(chat_id,
+                                "Welcome back to G-Task Manager! 👋\n\n"
                                 "Available commands:\n"
                                 "/balance - Check your earnings\n"
                                 "/tasks - View your tasks\n"
-                                "/help - Show this message")
+                                "/help - Show this message",
+                                "🌐 Visit Website",
+                                "https://80920867-bcfe-40c3-8c97-a2e022a1c795-00-2wgpp1vtr7kmu.riker.replit.dev")
                         else:
                             new_user = auto_register_telegram_user(telegram_user_id, first_name)
                             if new_user:
-                                send_telegram_message(chat_id,
+                                send_telegram_message_with_button(chat_id,
                                     f"🎉 Welcome to G-Task Manager! {first_name}\n\n"
                                     f"Your account has been created automatically!\n\n"
                                     f"Username: {new_user.username}\n\n"
                                     f"Available commands:\n"
                                     f"/balance - Check your earnings\n"
                                     f"/tasks - View your tasks\n"
-                                    f"/help - Show this message")
+                                    f"/help - Show this message",
+                                    "🌐 Visit Website",
+                                    "https://80920867-bcfe-40c3-8c97-a2e022a1c795-00-2wgpp1vtr7kmu.riker.replit.dev")
                             else:
                                 send_telegram_message(chat_id,
                                     "Welcome to G-Task Manager! 👋\n\n"

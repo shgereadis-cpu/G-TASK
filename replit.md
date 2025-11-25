@@ -100,6 +100,7 @@ gunicorn --bind=0.0.0.0:5000 --reuse-port main:app
 - Username generated from: `FirstName_TelegramID` with collision handling
 - Random password generated for security
 - Instant access to commands: `/balance`, `/tasks`, `/help`
+- Each welcome message includes a **"🌐 Visit Website"** button
 - No need to visit website or use Telegram login widget - fully automatic!
 
 ### 2025-11-25: Telegram Button UI
