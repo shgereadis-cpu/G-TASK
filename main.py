@@ -61,6 +61,7 @@ class Inventory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     gmail_username = db.Column(db.String(120), unique=True, nullable=False)
     gmail_password = db.Column(db.String(120), nullable=False)
+    recovery_email = db.Column(db.String(120), nullable=True)
     status = db.Column(db.String(20), default='AVAILABLE') # AVAILABLE, ASSIGNED, COMPLETED
     date_added = db.Column(db.DateTime, default=func.now())
     
@@ -680,7 +681,8 @@ def dashboard():
             current_task = {
                 'id': current_task_obj.id,
                 'gmail_username': inventory.gmail_username if inventory else '',
-                'gmail_password': inventory.gmail_password if inventory else ''
+                'gmail_password': inventory.gmail_password if inventory else '',
+                'recovery_email': inventory.recovery_email if inventory else ''
             }
 
         available_task = Inventory.query.filter_by(status='AVAILABLE').first()
@@ -692,6 +694,7 @@ def dashboard():
             my_tasks.append({
                 'id': task.id,
                 'gmail_username': inventory.gmail_username if inventory else '',
+                'recovery_email': inventory.recovery_email if inventory else '',
                 'status': task.status,
                 'date_assigned': task.date_assigned
             })
@@ -990,12 +993,18 @@ def admin_add_tasks():
                 if not line: continue
                 
                 if ':' in line:
-                    parts = line.split(':', 1)
-                    username = parts[0].strip()
-                    password = parts[1].strip()
+                    parts = line.split(':')
+                    username = parts[0].strip() if len(parts) > 0 else None
+                    password = parts[1].strip() if len(parts) > 1 else None
+                    recovery_email = parts[2].strip() if len(parts) > 2 else None
+                    
                     if username and password:
                         try:
-                            new_inventory = Inventory(gmail_username=username, gmail_password=password)
+                            new_inventory = Inventory(
+                                gmail_username=username, 
+                                gmail_password=password,
+                                recovery_email=recovery_email
+                            )
                             db.session.add(new_inventory)
                             db.session.commit()
                             successful_inserts += 1

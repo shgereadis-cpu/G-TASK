@@ -46,6 +46,11 @@
                     <p>
                         <strong>የይለፍ ቃል:</strong> <span class="highlight-danger">{{ current_task.gmail_password }}</span>
                     </p>
+                    {% if current_task.recovery_email %}
+                    <p>
+                        <strong>ሪከቨሪ ኢሜል:</strong> <span class="highlight-info">{{ current_task.recovery_email }}</span>
+                    </p>
+                    {% endif %}
                     <p class="instruction">
                         <i class="fas fa-exclamation-triangle"></i> ወደ gmail.com በመሄድ በዚህ መረጃ አዲስ አካውንት ይፍጠሩ እና ኢሜሉ ተከፈተ ወደሚያሳይ ስክሪንሻት ይልኩ።
                     </p>
