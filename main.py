@@ -610,7 +610,7 @@ def send_payment_notification(user_id, amount):
             return False
     
     try:
-        message = f"💰 የእንኳን ደስ አልዎት! ደሞዝህ ${amount:.2f} ወደ ዋሌትህ ተልኳል\n\nእባክዎን ዋሌትዎን ቼክ ያድርጉ"
+        message = f"💰 እንኳን ደስ አልዎት! ደሞዝህ ${amount:.2f} ወደ ዋሌትህ ተልኳል\n\nእባክዎን ዋሌትዎን ቼክ ያድርጉ"
         api_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
         response = requests.post(api_url, data={
             'chat_id': user.telegram_id,
