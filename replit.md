@@ -88,8 +88,8 @@ gunicorn --bind=0.0.0.0:5000 --reuse-port main:app
 - Manage task inventory
 
 ## Payment System
-- Workers earn $0.10 per verified task
-- Minimum payout: $1.00
+- Workers earn ብር 10.00 per verified task
+- Minimum payout: ብር 40.00
 - Payment method: USDT (TRC20) wallet
 
 ## Recent Changes
