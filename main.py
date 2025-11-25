@@ -305,11 +305,38 @@ def telegram_login_check():
         user = User.query.filter_by(telegram_id=telegram_id).first()
         
         if not user:
+            from sqlalchemy.exc import IntegrityError
             password_hash = generate_password_hash(f"telegram_{telegram_id}_{int(time.time())}")
-            user = User(username=telegram_username, password_hash=password_hash, telegram_id=telegram_id)
-            db.session.add(user)
-            db.session.commit()
-            flash('በ Telegram በተሳካ ሁኔታ ተመዝግበዋል!', 'success')
+            
+            base_username = telegram_username[:40] if len(telegram_username) > 40 else telegram_username
+            attempt_username = base_username
+            max_attempts = 10
+            
+            for attempt in range(max_attempts):
+                if len(attempt_username) > 80:
+                    attempt_username = attempt_username[:80]
+                
+                try:
+                    user = User(username=attempt_username, password_hash=password_hash, telegram_id=telegram_id)
+                    db.session.add(user)
+                    db.session.commit()
+                    flash('በ Telegram በተሳካ ሁኔታ ተመዝግበዋል!', 'success')
+                    break
+                except IntegrityError as e:
+                    db.session.rollback()
+                    if attempt == 0:
+                        attempt_username = f"{base_username}_{telegram_id}"
+                    else:
+                        attempt_username = f"{base_username}_{telegram_id}_{attempt}"
+                    
+                    if attempt == max_attempts - 1:
+                        flash('የተጠቃሚ ስም ችግር አለ። እባክዎ እንደገና ይሞክሩ።', 'error')
+                        return redirect(url_for('login'))
+                except Exception as e:
+                    db.session.rollback()
+                    print(f"Telegram login error for user {telegram_id}: {str(e)}")
+                    flash(f'ስህተት ተከስቷል። እባክዎ እንደገና ይሞክሩ።', 'error')
+                    return redirect(url_for('login'))
         
         session['user_id'] = user.id
         session['username'] = user.username
