@@ -936,6 +936,192 @@ footer {
     color: var(--accent-color);
 }
 
+/* ========== ENHANCED ANIMATIONS & EFFECTS ========== */
+
+@keyframes shimmer {
+    0% { background-position: -1000px 0; }
+    100% { background-position: 1000px 0; }
+}
+
+@keyframes glow-pulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(0, 212, 255, 0.4), var(--shadow-md); }
+    50% { box-shadow: 0 0 40px rgba(0, 212, 255, 0.8), var(--shadow-heavy); }
+}
+
+@keyframes slide-up {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes bounce-in {
+    0% { transform: scale(0.95) translateY(10px); opacity: 0; }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+@keyframes rotate-gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* ========== ENHANCED ELEMENTS ========== */
+
+.card {
+    animation: slide-up 0.6s ease-out;
+}
+
+.btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn:active::after {
+    width: 300px;
+    height: 300px;
+}
+
+/* Enhanced form inputs */
+.form-container input,
+.form-container textarea,
+.form-container select {
+    border: 2px solid transparent;
+    background: linear-gradient(var(--cream-bg), var(--cream-bg)) padding-box,
+                linear-gradient(135deg, var(--accent-color), var(--success-color)) border-box;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.form-container input:focus,
+.form-container textarea:focus,
+.form-container select:focus {
+    transform: translateY(-2px);
+    box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.15), 0 8px 25px rgba(0, 212, 255, 0.2);
+}
+
+/* Enhanced buttons with more effects */
+.btn {
+    letter-spacing: 0.5px;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn:hover {
+    letter-spacing: 1px;
+}
+
+/* Glowing effect on success buttons */
+.btn.success {
+    animation: glow-pulse 3s ease-in-out infinite;
+}
+
+.btn.success:hover {
+    animation: none;
+    box-shadow: 0 0 40px rgba(0, 217, 126, 0.8), 0 8px 30px rgba(0, 217, 126, 0.6);
+}
+
+/* Enhanced stat cards with better hover */
+.stat-card {
+    overflow: hidden;
+    background: var(--white);
+    position: relative;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s ease;
+    z-index: 1;
+}
+
+.stat-card:hover::before {
+    left: 100%;
+}
+
+.stat-card:hover {
+    border-bottom-width: 6px;
+}
+
+/* Enhanced message styling */
+.error-message,
+.success-message,
+.info-message,
+.warning-message {
+    animation: slide-up 0.5s ease-out;
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+}
+
+/* Enhanced status tags */
+.status-tag {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.status-tag:hover {
+    transform: scale(1.08);
+}
+
+/* Enhanced featured cards */
+.featured-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.featured-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.6s ease;
+}
+
+.featured-card:hover::before {
+    left: 100%;
+}
+
+/* ========== HEADER ENHANCEMENT ========== */
+
+header {
+    position: relative;
+    overflow: hidden;
+}
+
+header::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+    animation: shimmer 3s infinite;
+}
+
 /* ========== RESPONSIVE DESIGN ========== */
 
 @media (max-width: 1024px) {
