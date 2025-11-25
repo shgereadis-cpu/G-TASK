@@ -52,8 +52,7 @@ G-Task Manager is a Flask-based web application for managing Gmail account creat
 
 ### Default Admin Account
 - **Username**: Admin
-- **Password**: password123
-- **Note**: Change this password immediately in production!
+- **Password**: 070781
 
 ## Development Workflow
 
@@ -95,7 +94,13 @@ gunicorn --bind=0.0.0.0:5000 --reuse-port main:app
 
 ## Recent Changes
 
-### 2025-11-25: Bot Menu Commands (Latest)
+### 2025-11-25: Admin Credentials Configured (Latest)
+- Admin account: Username **Admin**, Password **070781**
+- Environment variables set: ADMIN_USERNAME and ADMIN_PASSWORD
+- Auto-created on app startup if not already in database
+- Credentials stored securely as hashed passwords
+
+### 2025-11-25: Bot Menu Commands
 - Moved commands from welcome message to bot menu
 - Users see `/balance`, `/tasks`, `/help` in Telegram command menu with descriptions
 - Cleaner welcome messages without command clutter
