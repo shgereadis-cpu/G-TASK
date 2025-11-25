@@ -43,12 +43,22 @@ G-Task Manager is a Flask-based web application for managing Gmail account creat
 
 ## Configuration
 
-### Environment Variables
-- `DATABASE_URL`: PostgreSQL connection string (auto-provided by Replit)
+### Environment Variables (Render Deployment)
+- `DATABASE_URL`: PostgreSQL connection string (provided by Render or PostgreSQL service)
 - `SECRET_KEY`: Flask session secret (auto-generated)
 - `TELEGRAM_BOT_TOKEN`: Telegram bot token for authentication (required for Telegram login)
 - `TELEGRAM_BOT_USERNAME`: Telegram bot username (set to: GtaskManager_bot)
-- `WEBHOOK_URL`: Full webhook URL for Telegram (e.g., https://yourapp.replit.dev/telegram/webhook)
+- `WEBHOOK_URL`: Full webhook URL for Telegram (e.g., https://g-task.onrender.com/telegram/webhook)
+
+### Render Deployment Setup
+1. Connect GitHub repository to Render
+2. Set environment variables in Render dashboard:
+   - `DATABASE_URL`: PostgreSQL connection string
+   - `TELEGRAM_BOT_TOKEN`: Your Telegram bot token
+   - `TELEGRAM_BOT_USERNAME`: GtaskManager_bot
+   - `WEBHOOK_URL`: https://g-task.onrender.com/telegram/webhook
+3. Deployment happens automatically on git push
+4. Access app at: https://g-task.onrender.com/
 
 ### Default Admin Account
 - **Username**: Admin
@@ -56,17 +66,25 @@ G-Task Manager is a Flask-based web application for managing Gmail account creat
 
 ## Development Workflow
 
-### Running Locally
+### Running Locally (Replit)
 The Flask development server runs on port 5000:
 ```bash
 python main.py
 ```
 
-### Deployment
-The application is configured for autoscale deployment using Gunicorn:
+### Production Deployment (Render)
+The application is configured for deployment on Render using Gunicorn.
+Deployment is automatic on git push:
 ```bash
 gunicorn --bind=0.0.0.0:5000 --reuse-port main:app
 ```
+
+**Render Service Configuration:**
+- Name: g-task
+- Build Command: `pip install -r requirements.txt`
+- Start Command: `gunicorn --bind=0.0.0.0:5000 --reuse-port main:app`
+- Environment: Python 3.x
+- URL: https://g-task.onrender.com/
 
 ## Features
 
@@ -204,12 +222,15 @@ gunicorn --bind=0.0.0.0:5000 --reuse-port main:app
 
 ## Telegram Bot Setup
 
-### Webhook Configuration
-1. Set `WEBHOOK_URL` environment variable to your app's webhook URL (e.g., `https://yourapp.replit.dev/telegram/webhook`)
-2. Call the admin endpoint to configure: `POST /telegram/set-webhook`
-   - Requires admin login
+### Webhook Configuration (Render)
+1. Set `WEBHOOK_URL` environment variable in Render dashboard: `https://g-task.onrender.com/telegram/webhook`
+2. Access admin panel and login with:
+   - Username: **Admin**
+   - Password: **070781**
+3. Call the admin endpoint to configure webhook: `POST https://g-task.onrender.com/telegram/set-webhook`
    - Registers the webhook with Telegram API
-   - Telegram will now send updates directly to your app
+   - Telegram will send updates directly to your Render app
+4. Verify webhook configuration is working by checking Telegram bot responses
 
 ### Bot Commands
 Users can interact with the bot via these commands:
