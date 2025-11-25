@@ -224,6 +224,60 @@ def logout():
     flash('ከመለያዎ ወጥተዋል!', 'info')
     return redirect(url_for('index'))
 
+@app.route('/telegram_login_check', methods=['GET'])
+def telegram_login_check():
+    TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
+    
+    if not TELEGRAM_BOT_TOKEN:
+        flash('Telegram login is not configured. Please contact administrator.', 'error')
+        return redirect(url_for('login'))
+    
+    auth_data = request.args.to_dict()
+    
+    if 'hash' not in auth_data:
+        flash('የተሳሳተ Telegram ማረጋገጫ መረጃ!', 'error')
+        return redirect(url_for('login'))
+    
+    check_hash = auth_data.pop('hash')
+    
+    data_check_string = '\n'.join([f'{k}={v}' for k, v in sorted(auth_data.items())])
+    
+    secret_key = hashlib.sha256(TELEGRAM_BOT_TOKEN.encode()).digest()
+    calculated_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
+    
+    if calculated_hash != check_hash:
+        flash('የተሳሳተ Telegram ማረጋገጫ!', 'error')
+        return redirect(url_for('login'))
+    
+    if 'auth_date' in auth_data:
+        auth_date = int(auth_data['auth_date'])
+        current_time = int(time.time())
+        if current_time - auth_date > 86400:
+            flash('Telegram login expired. Please try again.', 'error')
+            return redirect(url_for('login'))
+    
+    telegram_id = auth_data.get('id')
+    telegram_username = auth_data.get('username', f"telegram_user_{telegram_id}")
+    
+    if not telegram_id:
+        flash('የተሳሳተ Telegram መረጃ!', 'error')
+        return redirect(url_for('login'))
+    
+    with app.app_context():
+        user = User.query.filter_by(telegram_id=telegram_id).first()
+        
+        if not user:
+            password_hash = generate_password_hash(f"telegram_{telegram_id}_{int(time.time())}")
+            user = User(username=telegram_username, password_hash=password_hash, telegram_id=telegram_id)
+            db.session.add(user)
+            db.session.commit()
+            flash('በ Telegram በተሳካ ሁኔታ ተመዝግበዋል!', 'success')
+        
+        session['user_id'] = user.id
+        session['username'] = user.username
+        flash('በ Telegram በተሳካ ሁኔታ ገብተዋል!', 'success')
+        return redirect(url_for('dashboard'))
+
 @app.route('/dashboard')
 def dashboard():
     if not is_logged_in():
