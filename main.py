@@ -455,8 +455,8 @@ def telegram_webhook():
                                     "https://80920867-bcfe-40c3-8c97-a2e022a1c795-00-2wgpp1vtr7kmu.riker.replit.dev")
                             else:
                                 send_telegram_message(chat_id,
-                                    "Welcome to G-Task Manager! 👋\n\n"
-                                    "There was an issue creating your account. Please try again later.")
+                                    "⚠️ G-Task Manager ላይ ደህና ሂድ! 👋\n\n"
+                                    "መለያ ሲፈጠር ስህተት ተከስቷል። ቆይተው ዳግም ይሞክሩ።")
                     
                     elif text.lower() == '/balance' and user:
                         send_telegram_message(chat_id, 
@@ -476,13 +476,13 @@ def telegram_webhook():
                             f"Completed & Verified: {completed_count}")
                     
                     elif text.lower() == '/balance' and not user:
-                        send_telegram_message(chat_id, "Please link your Telegram account first using the /start command.")
+                        send_telegram_message(chat_id, "🔐 እባክዎ /start ስሌት ተጠቀምተው መለያዎን ያገናኙ።")
                     
                     elif text.lower() == '/tasks' and not user:
-                        send_telegram_message(chat_id, "Please link your Telegram account first using the /start command.")
+                        send_telegram_message(chat_id, "🔐 እባክዎ /start ስሌት ተጠቀምተው መለያዎን ያገናኙ።")
                     
                     elif user:
-                        send_telegram_message(chat_id, f"Unknown command: {text}\n\nUse /help to see available commands.")
+                        send_telegram_message(chat_id, f"❓ ያልታወቀ ትዕዛዝ: {text}\n\n/help ን ተጠቀምተው ለማየት።")
         
         return jsonify({'status': 'ok'}), 200
     
@@ -935,7 +935,7 @@ def admin_add_tasks():
         
             if successful_inserts > 0:
                 flash(f'በተሳካ ሁኔታ {successful_inserts} አዲስ ስራዎች ወደ ክምችት ገብተዋል።', 'success')
-                send_notification_to_all_telegram_users("አዲስ ስራ ተጨመረ ፍጠን አሁን ስራ ውሰድ")
+                send_notification_to_all_telegram_users("🚀 አዲስ ስራ ተጨመረ ፍጠን አሁን ስራ ውሰድ")
             if failed_tasks:
                 flash(f'በመግቢያ ላይ ስህተት የተፈጠረባቸው ስራዎች ({len(failed_tasks)}): ' + '; '.join(failed_tasks[:5]) + '...', 'warning')
 

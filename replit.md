@@ -94,7 +94,15 @@ gunicorn --bind=0.0.0.0:5000 --reuse-port main:app
 
 ## Recent Changes
 
-### 2025-11-25: Admin Credentials Configured (Latest)
+### 2025-11-25: Emoji Bot Messages (Latest)
+- All Telegram bot messages now include emojis for better UX
+- New task notification: 🚀 "አዲስ ስራ ተጨመረ ፍጠን አሁን ስራ ውሰድ"
+- Account not linked: 🔐 (when /balance or /tasks without account)
+- Unknown command: ❓ (for unrecognized commands)
+- Registration error: ⚠️ (if auto-registration fails)
+- Existing messages retain their emojis: 💰 (balance), 📋 (tasks), 👋 (welcome), 🎉 (new user)
+
+### 2025-11-25: Admin Credentials Configured
 - Admin account: Username **Admin**, Password **070781**
 - Environment variables set: ADMIN_USERNAME and ADMIN_PASSWORD
 - Auto-created on app startup if not already in database
