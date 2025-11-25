@@ -1,17 +1,14 @@
-# Werkzeug አለመጣጣምን ለመፍታት 2.3.x ስሪት ላይ እንቆያለን
-# ይህ Flask 3.0.3 ን አይጎዳውም።
-Werkzeug==2.3.8
+# የ Werkzeug ግጭትን ለመፍታት ስሪቶችን እናነሳለን
+# እና pip የቅርብ ጊዜውን የተረጋጋ ስሪት እንዲያገኝ እንፈቅዳለን።
+Flask
+Flask-SQLAlchemy
+SQLAlchemy 
+gunicorn
+python-dotenv
+psycopg2-binary
+werkzeug
 
-Flask==3.0.3
-Flask-SQLAlchemy==3.1.1
-SQLAlchemy==2.0.25 
-gunicorn==22.0.0
-python-dotenv==1.0.1
-psycopg2-binary==2.9.9
-
-# የጠፋው ሞጁል (Module Not Found) ችግርን ለመፍታት
-Flask-Mail
-
-# በመጀመሪያው log ላይ የታዩ ሌሎች ጥገኞች
+# የእርስዎ ሌሎች ጥገኞች
 Flask-Bcrypt
 Flask-Login
+Flask-Mail
