@@ -94,7 +94,14 @@ gunicorn --bind=0.0.0.0:5000 --reuse-port main:app
 
 ## Recent Changes
 
-### 2025-11-25: Telegram Auto-Login (Latest)
+### 2025-11-25: Payment Notification (Latest)
+- Added Telegram payment notifications when worker payouts are approved
+- Message: "💰 የእንኳን ደስ አልዎት! ደሞዝህ $X.XX ወደ ዋሌትህ ተልኳል - እባክዎን ዋሌትዎን ቼክ ያድርጉ"
+- Sent automatically when admin marks payout as PAID
+- Only sent to workers with linked Telegram accounts
+- Function: `send_payment_notification(user_id, amount)`
+
+### 2025-11-25: Telegram Auto-Login
 - Telegram users now automatically log in when clicking "🌐 Visit Website" button
 - No need to enter username/password
 - Temporary login tokens generated for each user (24-hour expiry)

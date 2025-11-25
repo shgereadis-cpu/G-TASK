@@ -594,6 +594,38 @@ def send_telegram_message_with_button(chat_id, text, button_text, button_url):
         traceback.print_exc()
         return False
 
+def send_payment_notification(user_id, amount):
+    """Send payment notification to Telegram user."""
+    import requests
+    
+    TELEGRAM_BOT_TOKEN = os.environ.get('BOT_TOKEN')
+    if not TELEGRAM_BOT_TOKEN:
+        print("⚠️ BOT_TOKEN not configured. Cannot send payment notification.")
+        return False
+    
+    with app.app_context():
+        user = User.query.filter_by(id=user_id).first()
+        if not user or not user.telegram_id:
+            print(f"⚠️ User {user_id} has no Telegram ID. Skipping notification.")
+            return False
+    
+    try:
+        message = f"💰 የእንኳን ደስ አልዎት! ደሞዝህ ${amount:.2f} ወደ ዋሌትህ ተልኳል\n\nእባክዎን ዋሌትዎን ቼክ ያድርጉ"
+        api_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+        response = requests.post(api_url, data={
+            'chat_id': user.telegram_id,
+            'text': message
+        })
+        if response.status_code == 200:
+            print(f"✅ Payment notification sent to {user.username}")
+            return True
+        else:
+            print(f"⚠️ Failed to send payment notification: {response.text}")
+            return False
+    except Exception as e:
+        print(f"❌ Error sending payment notification: {str(e)}")
+        return False
+
 @app.route('/telegram/set-webhook', methods=['POST', 'GET'])
 def telegram_set_webhook():
     import requests
@@ -1167,6 +1199,11 @@ def admin_action_payout(payout_id, action):
                 payout.status = 'PAID'
                 payout.date_paid = func.now()
                 db.session.commit()
+                
+                # Send Telegram payment notification to user
+                if user:
+                    send_payment_notification(user.id, payout.amount)
+                
                 flash(f'የ ${payout.amount:.2f} ክፍያ እንደተፈጸመ ምልክት ተደርጓል።', 'success')
 
             elif action == 'reject':
