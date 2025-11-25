@@ -669,6 +669,29 @@ def set_telegram_webhook():
 
 import requests
 
+@app.route('/webhook', methods=['POST'])
+def webhook_handler():
+    # ቴሌግራም የላከውን የ JSON ውሂብ ያግኙ
+    data = request.get_json()
+    
+    # ቴሌግራም በትክክል ለመገናኘት 200 OK ምላሽ ብቻ ይፈልጋል
+    if not data:
+        return 'ok', 200 
+    
+    # እዚህ ላይ የመልዕክት ማስኬጃ ኮድ ይገባል
+    # ምሳሌ:
+    # if 'message' in data:
+    #     handle_message(data['message'])
+
+    # ቴሌግራምን ማርካት ወሳኝ ነው!
+    return 'ok', 200
+
+# አስፈላጊ ከሆነ: handle_message ተግባርን ይግለጹ (ይህ ከቴሌግራም የሚመጡ ትዕዛዞችን የሚይዝ ነው)
+# def handle_message(message):
+#     chat_id = message['chat']['id']
+#     text = message['text']
+#     # ... ለ /start, /help, ወዘተ የሚሰጡ ምላሾችን እዚህ ይጨምሩ
+
 @app.route('/dashboard')
 def dashboard():
     if not is_logged_in():
