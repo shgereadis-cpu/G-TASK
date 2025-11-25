@@ -1,0 +1,45 @@
+I have a Flask application that uses Flask-SQLAlchemy, Flask-Login, and Flask-Bcrypt. I am deploying it on Render.
+
+I need you to integrate Telegram Login and create a notification system for my bot users.
+
+**CRITICAL REQUIREMENT:** All sensitive information, especially the Telegram Bot Token, MUST be retrieved from Environment Variables using `os.environ.get()` and MUST NOT be hardcoded.
+
+**Instructions for Replit AI:**
+
+1.  **Dependencies Update:** Add 'requests' to the `requirements.txt` file.
+
+2.  **Database Model Update:**
+    * Find the `User` class (model) in the project.
+    * Add a new column named `telegram_id` to the `User` model. This column must be a String, nullable, and unique. Example: `telegram_id = db.Column(db.String(50), unique=True, nullable=True)`.
+
+3.  **Telegram Login Widget (HTML):**
+    * Find the `login.html` template.
+    * Add the following Telegram Login Widget code somewhere visible on the page.
+        * **CRITICAL:** Use the actual bot username: **[YOUR_BOT_USERNAME_HERE]**.
+        * The `data-auth-url` must be `/telegram_login_check`.
+        ```html
+        <script async src="[https://telegram.org/js/telegram-widget.js?22](https://telegram.org/js/telegram-widget.js?22)"
+            data-telegram-login="[YOUR_BOT_USERNAME_HERE]"
+            data-size="large"
+            data-auth-url="/telegram_login_check"
+            data-request-access="write"></script>
+        ```
+
+4.  **Backend Login Route (Flask):**
+    * In the main application file (or routes file), create a new route: `@app.route('/telegram_login_check', methods=['GET'])`.
+    * **Bot Token Handling:** This route MUST retrieve the Bot Token using: `TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')`.
+    * **Verification:** The route must verify the received hash against the calculated hash using HMAC-SHA256 and check the 24-hour time limit.
+    * **User Handling:** If verification is successful, it should look for the user using `telegram_id`. If the user does not exist, create a new `User` account and save the `telegram_id`.
+    * **Login:** Use `login_user(user)` from Flask-Login to log the user in.
+    * **Redirect:** Redirect the user to the dashboard route (e.g., `url_for('dashboard')`).
+
+5.  **Notification System Setup (New Route/Function):**
+    * Create a function named `send_notification_to_all_telegram_users(message)`.
+    * **Bot Token Handling:** This function MUST retrieve the Bot Token using `os.environ.get('TELEGRAM_BOT_TOKEN')` inside the function or pass it as an argument.
+    * **Logic:** The function should fetch all users from the database who have a non-null `telegram_id` and use the Telegram API (`requests.post`) to send the `message` to each user's `telegram_id` (which acts as the chat_id). The API endpoint is `https://api.telegram.org/bot{token}/sendMessage`.
+
+6.  **Integration of Notification:**
+    * Add a placeholder call to the new notification function at the part of your code that handles **saving an item to the collection (ክምችት)**: `send_notification_to_all_telegram_users("A new item has been added to the collection!")`.
+
+**After completing all changes, prepare a single Commit message summarizing the Telegram integration.**
+ይህንን ትዕዛዝ ለ Replit AI ከሰጡ በኋላ፣ ኮዱን ይገምግሙና ወደ ጊት (Git) መግፋት (push) ይችላሉ። መልካም ሥራ!

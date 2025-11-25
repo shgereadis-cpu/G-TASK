@@ -6,6 +6,8 @@
 
 import os
 import time
+import hashlib
+import hmac
 from flask import Flask, render_template, request, session, redirect, url_for, flash, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
@@ -43,6 +45,7 @@ class User(db.Model):
     is_admin = db.Column(db.Boolean, default=False)
     total_earned = db.Column(db.Float, default=0.0)
     pending_payout = db.Column(db.Float, default=0.0)
+    telegram_id = db.Column(db.String(50), unique=True, nullable=True)
     
     # Relationships
     tasks = db.relationship('Task', backref='worker', lazy='dynamic')
