@@ -165,6 +165,44 @@ def check_admin_access():
         user = User.query.filter_by(id=session['user_id']).with_entities(User.is_admin).first()
         return user and user.is_admin
 
+def send_notification_to_all_telegram_users(message):
+    import requests
+    
+    TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
+    
+    if not TELEGRAM_BOT_TOKEN:
+        print("Warning: TELEGRAM_BOT_TOKEN not configured. Skipping notification.")
+        return
+    
+    with app.app_context():
+        users_with_telegram = User.query.filter(User.telegram_id.isnot(None)).all()
+        
+        if not users_with_telegram:
+            print("No users with Telegram ID found.")
+            return
+        
+        api_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+        
+        success_count = 0
+        failed_count = 0
+        
+        for user in users_with_telegram:
+            try:
+                response = requests.post(api_url, data={
+                    'chat_id': user.telegram_id,
+                    'text': message
+                })
+                if response.status_code == 200:
+                    success_count += 1
+                else:
+                    failed_count += 1
+                    print(f"Failed to send to user {user.username}: {response.text}")
+            except Exception as e:
+                failed_count += 1
+                print(f"Error sending to user {user.username}: {str(e)}")
+        
+        print(f"Telegram notifications sent: {success_count} successful, {failed_count} failed")
+
 @app.context_processor
 def inject_global_vars():
     return dict(is_admin=check_admin_access, min_payout=MIN_PAYOUT)
@@ -625,6 +663,7 @@ def admin_add_tasks():
         
             if successful_inserts > 0:
                 flash(f'በተሳካ ሁኔታ {successful_inserts} አዲስ ስራዎች ወደ ክምችት ገብተዋል።', 'success')
+                send_notification_to_all_telegram_users("A new item has been added to the collection!")
             if failed_tasks:
                 flash(f'በመግቢያ ላይ ስህተት የተፈጠረባቸው ስራዎች ({len(failed_tasks)}): ' + '; '.join(failed_tasks[:5]) + '...', 'warning')
 
