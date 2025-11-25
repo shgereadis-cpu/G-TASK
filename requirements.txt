@@ -13,3 +13,14 @@ requests  # <--- አዲስ የተጨመረ: ከቴሌግራም API ጋር ለመ
 Flask-Bcrypt
 Flask-Login
 Flask-Mail
+Flask
+Flask-Bcrypt
+Flask-Login
+Flask-Mail
+Flask-SQLAlchemy
+gunicorn
+psycopg2-binary
+python-dotenv
+requests
+SQLAlchemy
+werkzeug
