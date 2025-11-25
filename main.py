@@ -8,6 +8,8 @@ import os
 import time
 import hashlib
 import hmac
+import secrets
+from datetime import datetime, timedelta
 from flask import Flask, render_template, request, session, redirect, url_for, flash, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
@@ -46,6 +48,8 @@ class User(db.Model):
     total_earned = db.Column(db.Float, default=0.0)
     pending_payout = db.Column(db.Float, default=0.0)
     telegram_id = db.Column(db.String(50), unique=True, nullable=True)
+    telegram_login_token = db.Column(db.String(256), nullable=True)
+    telegram_token_expires = db.Column(db.DateTime, nullable=True)
     
     # Relationships
     tasks = db.relationship('Task', backref='worker', lazy='dynamic')
@@ -165,6 +169,16 @@ def check_admin_access():
         user = User.query.filter_by(id=session['user_id']).with_entities(User.is_admin).first()
         return user and user.is_admin
 
+def generate_telegram_login_token(user):
+    """Generate a temporary login token for Telegram user (24 hours expiry)."""
+    token = secrets.token_urlsafe(32)
+    expires = datetime.now() + timedelta(hours=24)
+    user.telegram_login_token = token
+    user.telegram_token_expires = expires
+    db.session.commit()
+    print(f"✅ Generated login token for {user.username}")
+    return token
+
 def send_notification_to_all_telegram_users(message):
     import requests
     
@@ -261,6 +275,30 @@ def logout():
     session.pop('username', None)
     flash('ከመለያዎ ወጥተዋል!', 'info')
     return redirect(url_for('index'))
+
+@app.route('/telegram_auto_login/<token>')
+def telegram_auto_login(token):
+    """Auto-login Telegram user with temporary token."""
+    with app.app_context():
+        user = User.query.filter_by(telegram_login_token=token).first()
+        
+        if not user:
+            flash('🔐 የሎግইን ቊታ ተገኝቷል! እንደገና ወደ Telegram ሂድ።', 'error')
+            return redirect(url_for('login'))
+        
+        if user.telegram_token_expires and datetime.now() > user.telegram_token_expires:
+            flash('🔐 የሎግইን ቊታ ጊዜው አልፍቷል! ወደ Telegram ወስደው ድጋሚ ሞክር።', 'error')
+            return redirect(url_for('login'))
+        
+        session['user_id'] = user.id
+        session['username'] = user.username
+        user.telegram_login_token = None
+        user.telegram_token_expires = None
+        db.session.commit()
+        
+        print(f"✅ Telegram auto-login successful for {user.username}")
+        flash('🎉 በTelegram ገብተዋል!', 'success')
+        return redirect(url_for('dashboard'))
 
 @app.route('/telegram_login_check', methods=['GET'])
 def telegram_login_check():
@@ -438,21 +476,25 @@ def telegram_webhook():
                 if text:
                     if text.lower() in ['/start', '/help']:
                         if user:
+                            token = generate_telegram_login_token(user)
+                            website_url = request.host_url.rstrip('/') + url_for('telegram_auto_login', token=token)
                             send_telegram_message_with_button(chat_id,
                                 "Welcome back to G-Task Manager! 👋\n\n"
                                 "Use the menu below to access commands.",
                                 "🌐 Visit Website",
-                                "https://80920867-bcfe-40c3-8c97-a2e022a1c795-00-2wgpp1vtr7kmu.riker.replit.dev")
+                                website_url)
                         else:
                             new_user = auto_register_telegram_user(telegram_user_id, first_name)
                             if new_user:
+                                token = generate_telegram_login_token(new_user)
+                                website_url = request.host_url.rstrip('/') + url_for('telegram_auto_login', token=token)
                                 send_telegram_message_with_button(chat_id,
                                     f"🎉 Welcome to G-Task Manager! {first_name}\n\n"
                                     f"Your account has been created automatically!\n\n"
                                     f"Username: {new_user.username}\n\n"
                                     f"Use the menu below to access commands.",
                                     "🌐 Visit Website",
-                                    "https://80920867-bcfe-40c3-8c97-a2e022a1c795-00-2wgpp1vtr7kmu.riker.replit.dev")
+                                    website_url)
                             else:
                                 send_telegram_message(chat_id,
                                     "⚠️ G-Task Manager ላይ ደህና ሂድ! 👋\n\n"

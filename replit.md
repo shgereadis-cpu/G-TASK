@@ -94,7 +94,16 @@ gunicorn --bind=0.0.0.0:5000 --reuse-port main:app
 
 ## Recent Changes
 
-### 2025-11-25: Emoji Bot Messages (Latest)
+### 2025-11-25: Telegram Auto-Login (Latest)
+- Telegram users now automatically log in when clicking "🌐 Visit Website" button
+- No need to enter username/password
+- Temporary login tokens generated for each user (24-hour expiry)
+- Tokens are secure (56-character URL-safe random strings)
+- One-click login from Telegram to website dashboard
+- Tokens are cleared after use for security
+- Database migration: Added `telegram_login_token` and `telegram_token_expires` columns
+
+### 2025-11-25: Emoji Bot Messages
 - All Telegram bot messages now include emojis for better UX
 - New task notification: 🚀 "አዲስ ስራ ተጨመረ ፍጠን አሁን ስራ ውሰድ"
 - Account not linked: 🔐 (when /balance or /tasks without account)
