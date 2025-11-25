@@ -94,7 +94,19 @@ gunicorn --bind=0.0.0.0:5000 --reuse-port main:app
 
 ## Recent Changes
 
-### 2025-11-25: Daily Check-In Task (Latest)
+### 2025-11-25: Device Fraud Detection System (Latest)
+- One device per user enforcement - prevents multiple accounts from same device
+- Device fingerprinting based on IP address + User-Agent (SHA256 hash)
+- Automatic device registration on first login
+- Blocks accounts if device is already registered to another user
+- Prevents balance/reward manipulation across multiple accounts
+- Works on login and daily check-in routes
+- Tracks device activity (last_activity timestamp)
+- Database model: `Device` with device_fingerprint, ip_address, user_agent
+- Error messages in Amharic for blocked users
+- Security alerts logged when fraud detected
+
+### 2025-11-25: Daily Check-In Task
 - Added daily check-in task feature for workers
 - Reward amount: ብር 0.20 per day (one check-in per user per day)
 - Workers can check-in from dashboard to earn instant reward

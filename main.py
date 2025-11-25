@@ -119,6 +119,18 @@ class DailyCheckIn(db.Model):
     # Unique constraint: one check-in per user per day
     __table_args__ = (db.UniqueConstraint('user_id', 'check_in_date', name='unique_daily_checkin'),)
 
+class Device(db.Model):
+    __tablename__ = 'devices'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    device_fingerprint = db.Column(db.String(256), nullable=False)  # Hash of device info
+    ip_address = db.Column(db.String(45), nullable=False)
+    user_agent = db.Column(db.Text, nullable=False)
+    device_name = db.Column(db.String(100), nullable=True)
+    last_activity = db.Column(db.DateTime, default=func.now(), onupdate=func.now())
+    date_added = db.Column(db.DateTime, default=func.now())
+    is_verified = db.Column(db.Boolean, default=False)
+
 # --- 2. DATABASE INIT & HELPER FUNCTIONS ---
 
 def init_db():
@@ -179,6 +191,48 @@ def check_admin_access():
     with app.app_context():
         user = User.query.filter_by(id=session['user_id']).with_entities(User.is_admin).first()
         return user and user.is_admin
+
+def generate_device_fingerprint(request):
+    """Generate device fingerprint from request headers."""
+    ip = request.remote_addr or 'unknown'
+    user_agent = request.headers.get('User-Agent', 'unknown')
+    # Create hash of IP + User-Agent for device identification
+    device_string = f"{ip}|{user_agent}"
+    fingerprint = hashlib.sha256(device_string.encode()).hexdigest()
+    return fingerprint, ip, user_agent
+
+def validate_device(user_id, request):
+    """Validate device and check for violations. Returns (is_valid, message)."""
+    fingerprint, ip, user_agent = generate_device_fingerprint(request)
+    
+    with app.app_context():
+        # Check if user already has this device
+        existing_device = Device.query.filter_by(
+            user_id=user_id, 
+            device_fingerprint=fingerprint
+        ).first()
+        
+        if existing_device:
+            existing_device.last_activity = func.now()
+            db.session.commit()
+            return True, "Device recognized"
+        
+        # Check if this device is used by other users
+        other_users = Device.query.filter_by(device_fingerprint=fingerprint).all()
+        if other_users:
+            print(f"🚨 FRAUD ALERT: Device {fingerprint} used by multiple users!")
+            return False, f"⛔ ይህ устройство በሌላ ተጠቃሚ ተባዝቷል። ሊጠቀሙ አይችሉም።"
+        
+        # Register new device
+        new_device = Device(
+            user_id=user_id,
+            device_fingerprint=fingerprint,
+            ip_address=ip,
+            user_agent=user_agent
+        )
+        db.session.add(new_device)
+        db.session.commit()
+        return True, "New device registered"
 
 def generate_telegram_login_token(user):
     """Generate a temporary login token for Telegram user (24 hours expiry)."""
@@ -271,6 +325,13 @@ def login():
         with app.app_context():
             user = User.query.filter_by(username=username).first()
         if user and check_password_hash(user.password_hash, password):
+            # Validate device
+            is_valid, device_msg = validate_device(user.id, request)
+            if not is_valid:
+                flash(device_msg, 'error')
+                print(f"❌ Login blocked for {username}: Device fraud detected")
+                return redirect(url_for('login'))
+            
             session['user_id'] = user.id
             session['username'] = user.username
             flash('በተሳካ ሁኔታ ገብተዋል!', 'success')
@@ -975,6 +1036,12 @@ def daily_checkin():
         if not user:
             return jsonify({'success': False, 'message': 'User not found'}), 404
         
+        # Validate device
+        is_valid, device_msg = validate_device(user_id, request)
+        if not is_valid:
+            print(f"🚨 Daily check-in blocked for {user.username}: Device fraud")
+            return jsonify({'success': False, 'message': device_msg}), 400
+        
         today = func.current_date()
         already_checked_in = DailyCheckIn.query.filter(
             DailyCheckIn.user_id == user_id,
@@ -984,7 +1051,7 @@ def daily_checkin():
         if already_checked_in:
             return jsonify({
                 'success': False, 
-                'message': 'ዛሬ ቀድሞ ገብተዋል! 내일ን ይጠብቁ።'
+                'message': 'ዛሬ ቀድሞ ገብተዋል! ነገ ይሞክሩ።'
             }), 400
         
         try:
