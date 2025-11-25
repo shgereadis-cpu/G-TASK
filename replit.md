@@ -103,7 +103,7 @@ gunicorn --bind=0.0.0.0:5000 --reuse-port main:app
 
 ### 2025-11-25: Payment Notification
 - Added Telegram payment notifications when worker payouts are approved
-- Message: "💰 እንኳን ደስ አልዎት! ደሞዝህ $X.XX ወደ ዋሌትህ ተልኳል - እባክዎን ዋሌትዎን ቼክ ያድርጉ"
+- Message: "💰 እንኳን ደስ አልዎት! ደሞዝህ ብር X.XX ወደ ዋሌትህ ተልኳል - እባክዎን ዋሌትዎን ቼክ ያድርጉ"
 - Sent automatically when admin marks payout as PAID
 - Only sent to workers with linked Telegram accounts
 - Function: `send_payment_notification(user_id, amount)`
