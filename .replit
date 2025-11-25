@@ -38,6 +38,10 @@ localPort = 33243
 externalPort = 3003
 
 [[ports]]
+localPort = 36247
+externalPort = 4200
+
+[[ports]]
 localPort = 38349
 externalPort = 3000
 
@@ -55,3 +59,4 @@ externalPort = 3001
 ADMIN_USERNAME = "Admin"
 ADMIN_PASSWORD = "password123"
 TELEGRAM_BOT_USERNAME = "GtaskManager_bot"
+WEBHOOK_URL = "https://80920867-bcfe-40c3-8c97-a2e022a1c795-00-2wgpp1vtr7kmu.riker.replit.dev/telegram/webhook"

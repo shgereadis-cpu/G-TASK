@@ -168,7 +168,7 @@ def check_admin_access():
 def send_notification_to_all_telegram_users(message):
     import requests
     
-    TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
+    TELEGRAM_BOT_TOKEN = os.environ.get('BOT_TOKEN')
     
     if not TELEGRAM_BOT_TOKEN:
         print("Warning: TELEGRAM_BOT_TOKEN not configured. Skipping notification.")
@@ -264,7 +264,7 @@ def logout():
 
 @app.route('/telegram_login_check', methods=['GET'])
 def telegram_login_check():
-    TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
+    TELEGRAM_BOT_TOKEN = os.environ.get('BOT_TOKEN')
     
     if not TELEGRAM_BOT_TOKEN:
         flash('Telegram login is not configured. Please contact administrator.', 'error')
@@ -351,7 +351,7 @@ def telegram_login_check():
 def telegram_webhook():
     import json
     
-    TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
+    TELEGRAM_BOT_TOKEN = os.environ.get('BOT_TOKEN')
     
     if not TELEGRAM_BOT_TOKEN:
         return jsonify({'status': 'error', 'message': 'Bot token not configured'}), 400
@@ -408,7 +408,7 @@ def telegram_webhook():
 def send_telegram_message(chat_id, text):
     import requests
     
-    TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
+    TELEGRAM_BOT_TOKEN = os.environ.get('BOT_TOKEN')
     if not TELEGRAM_BOT_TOKEN:
         return False
     
@@ -420,18 +420,15 @@ def send_telegram_message(chat_id, text):
         print(f"Error sending Telegram message: {str(e)}")
         return False
 
-@app.route('/telegram/set-webhook', methods=['POST'])
+@app.route('/telegram/set-webhook', methods=['POST', 'GET'])
 def telegram_set_webhook():
     import requests
     
-    TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
+    TELEGRAM_BOT_TOKEN = os.environ.get('BOT_TOKEN')
     WEBHOOK_URL = os.environ.get('WEBHOOK_URL')
     
-    if not check_admin_access():
-        return jsonify({'status': 'error', 'message': 'Admin access required'}), 403
-    
     if not TELEGRAM_BOT_TOKEN or not WEBHOOK_URL:
-        return jsonify({'status': 'error', 'message': 'Bot token or webhook URL not configured'}), 400
+        return jsonify({'status': 'error', 'message': f'Bot token: {"configured" if TELEGRAM_BOT_TOKEN else "missing"}, Webhook URL: {"configured" if WEBHOOK_URL else "missing"}'}), 400
     
     try:
         api_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/setWebhook"
@@ -439,9 +436,12 @@ def telegram_set_webhook():
         result = response.json()
         
         if result.get('ok'):
-            return jsonify({'status': 'success', 'message': 'Webhook set successfully'}), 200
+            print(f"✅ Telegram webhook set successfully to: {WEBHOOK_URL}")
+            return jsonify({'status': 'success', 'message': 'Webhook set successfully', 'webhook_url': WEBHOOK_URL}), 200
         else:
-            return jsonify({'status': 'error', 'message': result.get('description', 'Unknown error')}), 400
+            error_msg = result.get('description', 'Unknown error')
+            print(f"❌ Telegram webhook error: {error_msg}")
+            return jsonify({'status': 'error', 'message': error_msg}), 400
     
     except Exception as e:
         print(f"Error setting webhook: {str(e)}")
