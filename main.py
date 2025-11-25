@@ -347,6 +347,106 @@ def telegram_login_check():
         flash('በ Telegram በተሳካ ሁኔታ ገብተዋል!', 'success')
         return redirect(url_for('dashboard'))
 
+@app.route('/telegram/webhook', methods=['POST'])
+def telegram_webhook():
+    import json
+    
+    TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
+    
+    if not TELEGRAM_BOT_TOKEN:
+        return jsonify({'status': 'error', 'message': 'Bot token not configured'}), 400
+    
+    try:
+        update_data = request.get_json()
+        
+        if not update_data:
+            return jsonify({'status': 'ok'}), 200
+        
+        if 'message' in update_data:
+            message = update_data['message']
+            chat_id = message.get('chat', {}).get('id')
+            text = message.get('text', '')
+            user_info = message.get('from', {})
+            telegram_user_id = str(user_info.get('id'))
+            
+            with app.app_context():
+                user = User.query.filter_by(telegram_id=telegram_user_id).first()
+                
+                if user and text:
+                    if text.lower() in ['/start', '/help']:
+                        send_telegram_message(chat_id, 
+                            "Welcome to G-Task Manager!\n\n"
+                            "Available commands:\n"
+                            "/start - Show this message\n"
+                            "/balance - Check your balance\n"
+                            "/tasks - View your tasks\n"
+                            "/help - Show help")
+                    
+                    elif text.lower() == '/balance':
+                        send_telegram_message(chat_id, 
+                            f"Your Balance:\n"
+                            f"Earned: ${user.total_earned:.2f}\n"
+                            f"Pending: ${user.pending_payout:.2f}")
+                    
+                    elif text.lower() == '/tasks':
+                        tasks_count = Task.query.filter_by(user_id=user.id).count()
+                        completed_count = Task.query.filter(
+                            Task.user_id == user.id, 
+                            Task.status == 'VERIFIED'
+                        ).count()
+                        send_telegram_message(chat_id,
+                            f"Your Tasks:\n"
+                            f"Total: {tasks_count}\n"
+                            f"Completed: {completed_count}")
+        
+        return jsonify({'status': 'ok'}), 200
+    
+    except Exception as e:
+        print(f"Webhook error: {str(e)}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+def send_telegram_message(chat_id, text):
+    import requests
+    
+    TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
+    if not TELEGRAM_BOT_TOKEN:
+        return False
+    
+    try:
+        api_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+        response = requests.post(api_url, data={'chat_id': chat_id, 'text': text})
+        return response.status_code == 200
+    except Exception as e:
+        print(f"Error sending Telegram message: {str(e)}")
+        return False
+
+@app.route('/telegram/set-webhook', methods=['POST'])
+def telegram_set_webhook():
+    import requests
+    
+    TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
+    WEBHOOK_URL = os.environ.get('WEBHOOK_URL')
+    
+    if not check_admin_access():
+        return jsonify({'status': 'error', 'message': 'Admin access required'}), 403
+    
+    if not TELEGRAM_BOT_TOKEN or not WEBHOOK_URL:
+        return jsonify({'status': 'error', 'message': 'Bot token or webhook URL not configured'}), 400
+    
+    try:
+        api_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/setWebhook"
+        response = requests.post(api_url, data={'url': WEBHOOK_URL})
+        result = response.json()
+        
+        if result.get('ok'):
+            return jsonify({'status': 'success', 'message': 'Webhook set successfully'}), 200
+        else:
+            return jsonify({'status': 'error', 'message': result.get('description', 'Unknown error')}), 400
+    
+    except Exception as e:
+        print(f"Error setting webhook: {str(e)}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
 @app.route('/dashboard')
 def dashboard():
     if not is_logged_in():

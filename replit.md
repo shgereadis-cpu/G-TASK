@@ -48,6 +48,7 @@ G-Task Manager is a Flask-based web application for managing Gmail account creat
 - `SECRET_KEY`: Flask session secret (auto-generated)
 - `TELEGRAM_BOT_TOKEN`: Telegram bot token for authentication (required for Telegram login)
 - `TELEGRAM_BOT_USERNAME`: Telegram bot username (set to: GtaskManager_bot)
+- `WEBHOOK_URL`: Full webhook URL for Telegram (e.g., https://yourapp.replit.dev/telegram/webhook)
 
 ### Default Admin Account
 - **Username**: Admin
@@ -94,6 +95,14 @@ gunicorn --bind=0.0.0.0:5000 --reuse-port main:app
 
 ## Recent Changes
 
+### 2025-11-25: Telegram Webhook Integration (Latest)
+- Added `/telegram/webhook` POST route for receiving Telegram updates
+- Implemented bot commands: `/start`, `/help`, `/balance`, `/tasks`
+- Created `send_telegram_message()` helper function for bot responses
+- Added `/telegram/set-webhook` route for admin webhook configuration
+- Bot can now respond directly to user messages via Telegram
+- Webhook receives real-time updates from Telegram API
+
 ### 2025-11-25: Telegram Integration
 - Added Telegram Login Widget to login page
 - Implemented secure HMAC-SHA256 hash verification for Telegram authentication
@@ -113,7 +122,29 @@ gunicorn --bind=0.0.0.0:5000 --reuse-port main:app
 - Set up deployment configuration with Gunicorn
 - Added missing templates (payout_request.html, admin_payouts.html)
 
+## Telegram Bot Setup
+
+### Webhook Configuration
+1. Set `WEBHOOK_URL` environment variable to your app's webhook URL (e.g., `https://yourapp.replit.dev/telegram/webhook`)
+2. Call the admin endpoint to configure: `POST /telegram/set-webhook`
+   - Requires admin login
+   - Registers the webhook with Telegram API
+   - Telegram will now send updates directly to your app
+
+### Bot Commands
+Users can interact with the bot via these commands:
+- `/start` or `/help` - Display welcome message and available commands
+- `/balance` - Show user's earnings and pending payout
+- `/tasks` - View task statistics
+
+### Webhook Features
+- Receives real-time updates from Telegram when users message the bot
+- Automatically links Telegram users to G-Task Manager accounts
+- Sends instant responses to user commands
+- Integrates with existing task notification system
+
 ## Notes
 - Application uses Amharic language (Ethiopia)
 - Database automatically initializes on first run
 - All routes are protected with session-based authentication
+- Webhook requires TELEGRAM_BOT_TOKEN and WEBHOOK_URL to be configured
