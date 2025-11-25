@@ -54,3 +54,4 @@ externalPort = 3001
 [userenv.shared]
 ADMIN_USERNAME = "Admin"
 ADMIN_PASSWORD = "password123"
+TELEGRAM_BOT_USERNAME = "GtaskManager_bot"

@@ -308,13 +308,22 @@ def telegram_login_check():
             from sqlalchemy.exc import IntegrityError
             password_hash = generate_password_hash(f"telegram_{telegram_id}_{int(time.time())}")
             
-            base_username = telegram_username[:40] if len(telegram_username) > 40 else telegram_username
-            attempt_username = base_username
+            suffix_id = str(telegram_id)
+            max_suffix_length = len(suffix_id) + 5
+            max_base_length = 80 - max_suffix_length - 1
+            
+            base_username = telegram_username[:max_base_length] if len(telegram_username) > max_base_length else telegram_username
             max_attempts = 10
             
             for attempt in range(max_attempts):
-                if len(attempt_username) > 80:
-                    attempt_username = attempt_username[:80]
+                if attempt == 0:
+                    attempt_username = base_username
+                elif attempt == 1:
+                    attempt_username = f"{base_username}_{suffix_id}"
+                else:
+                    attempt_username = f"{base_username}_{suffix_id}_{attempt-1}"
+                
+                attempt_username = attempt_username[:80]
                 
                 try:
                     user = User(username=attempt_username, password_hash=password_hash, telegram_id=telegram_id)
@@ -324,11 +333,6 @@ def telegram_login_check():
                     break
                 except IntegrityError as e:
                     db.session.rollback()
-                    if attempt == 0:
-                        attempt_username = f"{base_username}_{telegram_id}"
-                    else:
-                        attempt_username = f"{base_username}_{telegram_id}_{attempt}"
-                    
                     if attempt == max_attempts - 1:
                         flash('የተጠቃሚ ስም ችግር አለ። እባክዎ እንደገና ይሞክሩ።', 'error')
                         return redirect(url_for('login'))
