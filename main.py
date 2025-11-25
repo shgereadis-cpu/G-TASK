@@ -292,9 +292,9 @@ def telegram_auto_login(token):
         
         session['user_id'] = user.id
         session['username'] = user.username
-        user.telegram_login_token = None
-        user.telegram_token_expires = None
-        db.session.commit()
+        
+        # Generate a fresh token for next login (user can logout and login again without /start)
+        generate_telegram_login_token(user)
         
         print(f"✅ Telegram auto-login successful for {user.username}")
         flash('🎉 በTelegram ገብተዋል!', 'success')

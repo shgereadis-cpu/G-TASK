@@ -100,7 +100,8 @@ gunicorn --bind=0.0.0.0:5000 --reuse-port main:app
 - Temporary login tokens generated for each user (24-hour expiry)
 - Tokens are secure (56-character URL-safe random strings)
 - One-click login from Telegram to website dashboard
-- Tokens are cleared after use for security
+- Tokens are regenerated after each login (enables logout/login cycles)
+- Users can logout and login again without needing to send /start command
 - Database migration: Added `telegram_login_token` and `telegram_token_expires` columns
 
 ### 2025-11-25: Emoji Bot Messages
