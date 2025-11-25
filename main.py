@@ -109,6 +109,16 @@ class AdView(db.Model):
     status = db.Column(db.String(20), default='PENDING') # PENDING, REWARDED
     date_viewed = db.Column(db.DateTime, default=func.now())
 
+class DailyCheckIn(db.Model):
+    __tablename__ = 'daily_check_ins'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    check_in_date = db.Column(db.Date, default=func.current_date())
+    date_checked_in = db.Column(db.DateTime, default=func.now())
+    
+    # Unique constraint: one check-in per user per day
+    __table_args__ = (db.UniqueConstraint('user_id', 'check_in_date', name='unique_daily_checkin'),)
+
 # --- 2. DATABASE INIT & HELPER FUNCTIONS ---
 
 def init_db():
@@ -949,6 +959,55 @@ def register_ad_reward(ad_id):
             
         except Exception as e:
             db.session.rollback()
+            return jsonify({'success': False, 'message': 'Internal Server Error'}), 500
+
+@app.route('/daily_checkin', methods=['POST'])
+def daily_checkin():
+    """Daily check-in task with 0.20 ብር reward."""
+    if not is_logged_in():
+        return jsonify({'success': False, 'message': 'Not logged in'}), 401
+    
+    user_id = session['user_id']
+    DAILY_CHECKIN_REWARD = 0.20
+    
+    with app.app_context():
+        user = User.query.filter_by(id=user_id).first()
+        if not user:
+            return jsonify({'success': False, 'message': 'User not found'}), 404
+        
+        today = func.current_date()
+        already_checked_in = DailyCheckIn.query.filter(
+            DailyCheckIn.user_id == user_id,
+            DailyCheckIn.check_in_date == today
+        ).first()
+        
+        if already_checked_in:
+            return jsonify({
+                'success': False, 
+                'message': 'ዛሬ ቀድሞ ገብተዋል! 내일ን ይጠብቁ።'
+            }), 400
+        
+        try:
+            # Add reward to user balance
+            user.pending_payout += DAILY_CHECKIN_REWARD
+            user.total_earned += DAILY_CHECKIN_REWARD
+            
+            # Record check-in
+            new_checkin = DailyCheckIn(user_id=user_id)
+            db.session.add(new_checkin)
+            db.session.commit()
+            
+            print(f"✅ Daily check-in for {user.username}: +ብር{DAILY_CHECKIN_REWARD}")
+            
+            return jsonify({
+                'success': True,
+                'message': f'🎉 እንኳን ደስ አልዎት! ብር {DAILY_CHECKIN_REWARD:.2f} ወደ ቀሪ ሂሳብዎ ተጨምሯል!',
+                'new_balance': f'{user.pending_payout:.2f}'
+            }), 200
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"❌ Daily check-in error: {str(e)}")
             return jsonify({'success': False, 'message': 'Internal Server Error'}), 500
 
 

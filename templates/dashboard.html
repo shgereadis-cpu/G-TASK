@@ -96,27 +96,54 @@
             {% endif %}
         </div>
 
-        <div class="featured-opportunity-section">
-            <a href="{{ url_for('view_ads') }}" class="featured-card">
-                <div class="featured-card-inner">
-                    <div class="featured-icon">
-                        <i class="fas fa-video"></i>
-                    </div>
-                    <div class="featured-content">
-                        <div class="featured-badge">🎁 ጠቅላላ ወደ ገቢዎ ያክሉ</div>
-                        <h3>ማስታወቂያዎችን በመመልከት ገቢ ያግኙ!</h3>
-                        <p>ቀጥተኛ ወደ ዳሽቦርድዎ በሚወጣ ገንዘብ ተሳኢቅ የተገለጽ ጊዜ ዝርዝር ይመልከቱ።</p>
-                        <div class="featured-stats">
-                            <span class="stat-badge"><i class="fas fa-clock"></i> ⏱ ፈጣን</span>
-                            <span class="stat-badge"><i class="fas fa-money-bill-alt"></i> 💰 ኢንስታንት</span>
-                            <span class="stat-badge success-badge">🆕 አዲስ</span>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+            <!-- Daily Check-In Card -->
+            <div class="featured-opportunity-section">
+                <button onclick="dailyCheckin()" class="featured-card" style="background: none; border: none; cursor: pointer; width: 100%; text-align: left;">
+                    <div class="featured-card-inner">
+                        <div class="featured-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="featured-content">
+                            <div class="featured-badge">📅 ዕለታዊ ሪዋርድ</div>
+                            <h3>ዛሬ ገቡ!</h3>
+                            <p>ዛሬ ገብተው ብር 0.20 ያግኙ - በየቀኑ ይደገማል!</p>
+                            <div class="featured-stats">
+                                <span class="stat-badge"><i class="fas fa-star"></i> ⭐ ቀላል</span>
+                                <span class="stat-badge"><i class="fas fa-money-bill-alt"></i> 💰 ብር 0.20</span>
+                                <span class="stat-badge success-badge">✨ በይነ-ሞ</span>
+                            </div>
+                        </div>
+                        <div class="featured-arrow">
+                            <i class="fas fa-arrow-right"></i>
                         </div>
                     </div>
-                    <div class="featured-arrow">
-                        <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+
+            <!-- Video Ads Card -->
+            <div class="featured-opportunity-section">
+                <a href="{{ url_for('view_ads') }}" class="featured-card">
+                    <div class="featured-card-inner">
+                        <div class="featured-icon">
+                            <i class="fas fa-video"></i>
+                        </div>
+                        <div class="featured-content">
+                            <div class="featured-badge">🎁 ጠቅላላ ወደ ገቢዎ ያክሉ</div>
+                            <h3>ማስታወቂያዎችን በመመልከት ገቢ ያግኙ!</h3>
+                            <p>ቀጥተኛ ወደ ዳሽቦርድዎ በሚወጣ ገንዘብ ተሳኢቅ የተገለጽ ጊዜ ዝርዝር ይመልከቱ።</p>
+                            <div class="featured-stats">
+                                <span class="stat-badge"><i class="fas fa-clock"></i> ⏱ ፈጣን</span>
+                                <span class="stat-badge"><i class="fas fa-money-bill-alt"></i> 💰 ኢንስታንት</span>
+                                <span class="stat-badge success-badge">🆕 አዲስ</span>
+                            </div>
+                        </div>
+                        <div class="featured-arrow">
+                            <i class="fas fa-arrow-right"></i>
+                        </div>
                     </div>
-                </div>
-            </a>
+                </a>
+            </div>
         </div>
         
         <div id="task-history" class="card task-history-block">
@@ -168,6 +195,31 @@
 
 
 {% include 'footer.html' %}
+
+<script>
+function dailyCheckin() {
+    fetch('{{ url_for("daily_checkin") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            // Refresh the page to update balance
+            location.reload();
+        } else {
+            alert('❌ ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error performing daily check-in');
+    });
+}
+</script>
 
 <style>
 /* --- Featured Opportunity Section --- */

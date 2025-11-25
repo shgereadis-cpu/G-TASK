@@ -94,7 +94,17 @@ gunicorn --bind=0.0.0.0:5000 --reuse-port main:app
 
 ## Recent Changes
 
-### 2025-11-25: Recovery Email Support (Latest)
+### 2025-11-25: Daily Check-In Task (Latest)
+- Added daily check-in task feature for workers
+- Reward amount: ብር 0.20 per day (one check-in per user per day)
+- Workers can check-in from dashboard to earn instant reward
+- Reward is added directly to pending_payout balance
+- Database model: `DailyCheckIn` with unique constraint (user_id, check_in_date)
+- Route: `POST /daily_checkin` - AJAX-based instant completion
+- Dashboard shows check-in button alongside video ads
+- One-time check-in per day enforcement at database level
+
+### 2025-11-25: Recovery Email Support
 - Added recovery email field to Gmail account inventory
 - Admin can now add tasks with format: `gmail_username:gmail_password:recovery_email`
 - Recovery email is displayed to workers when they take tasks
