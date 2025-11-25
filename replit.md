@@ -95,7 +95,14 @@ gunicorn --bind=0.0.0.0:5000 --reuse-port main:app
 
 ## Recent Changes
 
-### 2025-11-25: Telegram Button UI (Latest)
+### 2025-11-25: Auto-Registration for Telegram Users (Latest)
+- New Telegram users are automatically registered when they send `/start` to the bot
+- Username generated from: `FirstName_TelegramID` with collision handling
+- Random password generated for security
+- Instant access to commands: `/balance`, `/tasks`, `/help`
+- No need to visit website or use Telegram login widget - fully automatic!
+
+### 2025-11-25: Telegram Button UI
 - Updated welcome message to show login link as a clickable button instead of plain text
 - Added `send_telegram_message_with_button()` function for inline keyboard markup
 - Welcome message now displays: "🔐 Login & Link Account" button

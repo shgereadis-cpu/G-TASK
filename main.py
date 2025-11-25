@@ -347,6 +347,39 @@ def telegram_login_check():
         flash('በ Telegram በተሳካ ሁኔታ ገብተዋል!', 'success')
         return redirect(url_for('dashboard'))
 
+def auto_register_telegram_user(telegram_user_id, first_name):
+    """Auto-register a new Telegram user with a generated username and password"""
+    import string
+    import random
+    
+    telegram_id = str(telegram_user_id)
+    
+    base_username = f"{first_name}_{telegram_id}"[:80]
+    attempt_username = base_username
+    attempt = 0
+    max_attempts = 100
+    
+    while attempt < max_attempts:
+        attempt += 1
+        if not User.query.filter_by(username=attempt_username).first():
+            break
+        suffix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=4))
+        attempt_username = f"{base_username}_{suffix}"[:80]
+    
+    random_password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
+    password_hash = generate_password_hash(random_password)
+    
+    try:
+        user = User(username=attempt_username, password_hash=password_hash, telegram_id=telegram_id)
+        db.session.add(user)
+        db.session.commit()
+        print(f"✅ Auto-registered Telegram user: {attempt_username} (ID: {telegram_id})")
+        return user
+    except Exception as e:
+        db.session.rollback()
+        print(f"❌ Error auto-registering user: {str(e)}")
+        return None
+
 @app.route('/telegram/webhook', methods=['POST'])
 def telegram_webhook():
     import json
@@ -368,6 +401,7 @@ def telegram_webhook():
             text = message.get('text', '')
             user_info = message.get('from', {})
             telegram_user_id = str(user_info.get('id'))
+            first_name = user_info.get('first_name', 'User')
             
             print(f"📱 Telegram message received: chat_id={chat_id}, user_id={telegram_user_id}, text={text}")
             
@@ -384,14 +418,20 @@ def telegram_webhook():
                                 "/tasks - View your tasks\n"
                                 "/help - Show this message")
                         else:
-                            send_telegram_message_with_button(chat_id,
-                                "Welcome to G-Task Manager! 👋\n\n"
-                                "To get started, click the button below to login on our website.\n\n"
-                                "After linking your account, you can use:\n"
-                                "/balance - Check your earnings\n"
-                                "/tasks - View your tasks",
-                                "🔐 Login & Link Account",
-                                "https://80920867-bcfe-40c3-8c97-a2e022a1c795-00-2wgpp1vtr7kmu.riker.replit.dev")
+                            new_user = auto_register_telegram_user(telegram_user_id, first_name)
+                            if new_user:
+                                send_telegram_message(chat_id,
+                                    f"🎉 Welcome to G-Task Manager! {first_name}\n\n"
+                                    f"Your account has been created automatically!\n\n"
+                                    f"Username: {new_user.username}\n\n"
+                                    f"Available commands:\n"
+                                    f"/balance - Check your earnings\n"
+                                    f"/tasks - View your tasks\n"
+                                    f"/help - Show this message")
+                            else:
+                                send_telegram_message(chat_id,
+                                    "Welcome to G-Task Manager! 👋\n\n"
+                                    "There was an issue creating your account. Please try again later.")
                     
                     elif text.lower() == '/balance' and user:
                         send_telegram_message(chat_id, 
