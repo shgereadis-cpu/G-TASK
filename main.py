@@ -935,7 +935,7 @@ def admin_add_tasks():
         
             if successful_inserts > 0:
                 flash(f'በተሳካ ሁኔታ {successful_inserts} አዲስ ስራዎች ወደ ክምችት ገብተዋል።', 'success')
-                send_notification_to_all_telegram_users("A new item has been added to the collection!")
+                send_notification_to_all_telegram_users("አዲስ ስራ ተጨመረ ፍጠን አሁን ስራ ውሰድ")
             if failed_tasks:
                 flash(f'በመግቢያ ላይ ስህተት የተፈጠረባቸው ስራዎች ({len(failed_tasks)}): ' + '; '.join(failed_tasks[:5]) + '...', 'warning')
 
