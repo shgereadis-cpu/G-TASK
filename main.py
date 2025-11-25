@@ -384,13 +384,14 @@ def telegram_webhook():
                                 "/tasks - View your tasks\n"
                                 "/help - Show this message")
                         else:
-                            send_telegram_message(chat_id,
+                            send_telegram_message_with_button(chat_id,
                                 "Welcome to G-Task Manager! 👋\n\n"
-                                "To get started, please click the Telegram Login button on our website:\n"
-                                "https://80920867-bcfe-40c3-8c97-a2e022a1c795-00-2wgpp1vtr7kmu.riker.replit.dev\n\n"
+                                "To get started, click the button below to login on our website.\n\n"
                                 "After linking your account, you can use:\n"
                                 "/balance - Check your earnings\n"
-                                "/tasks - View your tasks")
+                                "/tasks - View your tasks",
+                                "🔐 Login & Link Account",
+                                "https://80920867-bcfe-40c3-8c97-a2e022a1c795-00-2wgpp1vtr7kmu.riker.replit.dev")
                     
                     elif text.lower() == '/balance' and user:
                         send_telegram_message(chat_id, 
@@ -446,6 +447,42 @@ def send_telegram_message(chat_id, text):
         return response.status_code == 200
     except Exception as e:
         print(f"❌ Error sending Telegram message: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return False
+
+def send_telegram_message_with_button(chat_id, text, button_text, button_url):
+    import requests
+    import json
+    
+    TELEGRAM_BOT_TOKEN = os.environ.get('BOT_TOKEN')
+    if not TELEGRAM_BOT_TOKEN:
+        print("❌ BOT_TOKEN not configured!")
+        return False
+    
+    try:
+        api_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+        keyboard = {
+            "inline_keyboard": [[{
+                "text": button_text,
+                "url": button_url
+            }]]
+        }
+        data = {
+            'chat_id': chat_id,
+            'text': text,
+            'reply_markup': json.dumps(keyboard)
+        }
+        print(f"📤 Sending message with button to chat_id={chat_id}")
+        response = requests.post(api_url, data=data)
+        print(f"📨 Telegram API response: status={response.status_code}, body={response.text[:200]}")
+        if response.status_code == 200:
+            print(f"✅ Message with button sent successfully!")
+        else:
+            print(f"⚠️ Message sent but status code is {response.status_code}")
+        return response.status_code == 200
+    except Exception as e:
+        print(f"❌ Error sending button message: {str(e)}")
         import traceback
         traceback.print_exc()
         return False

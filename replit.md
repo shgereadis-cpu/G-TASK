@@ -95,7 +95,13 @@ gunicorn --bind=0.0.0.0:5000 --reuse-port main:app
 
 ## Recent Changes
 
-### 2025-11-25: Telegram Webhook Integration (Latest)
+### 2025-11-25: Telegram Button UI (Latest)
+- Updated welcome message to show login link as a clickable button instead of plain text
+- Added `send_telegram_message_with_button()` function for inline keyboard markup
+- Welcome message now displays: "🔐 Login & Link Account" button
+- New users see a professional button-based interface
+
+### 2025-11-25: Telegram Webhook Integration
 - Added `/telegram/webhook` POST route for receiving Telegram updates
 - Implemented bot commands: `/start`, `/help`, `/balance`, `/tasks`
 - Created `send_telegram_message()` helper function for bot responses
