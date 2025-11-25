@@ -214,7 +214,8 @@ def login():
             return redirect(url_for('dashboard'))
         else:
             flash('ትክክለኛ ያልሆነ የተጠቃሚ ስም ወይም የይለፍ ቃል!', 'error')
-    return render_template('login.html')
+    telegram_bot_username = os.environ.get('TELEGRAM_BOT_USERNAME')
+    return render_template('login.html', telegram_bot_username=telegram_bot_username)
 
 @app.route('/logout')
 def logout():
