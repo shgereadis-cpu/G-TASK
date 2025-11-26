@@ -559,7 +559,7 @@ def auto_register_telegram_user(telegram_user_id, first_name):
 def telegram_webhook():
     import json
     
-    TELEGRAM_BOT_TOKEN = os.environ.get('BOT_TOKEN')
+    TELEGRAM_BOT_TOKEN = BOT_TOKEN
     
     if not TELEGRAM_BOT_TOKEN:
         return jsonify({'status': 'error', 'message': 'Bot token not configured'}), 400
@@ -651,26 +651,28 @@ def set_telegram_webhook():
     
     import requests
     
-    TELEGRAM_BOT_TOKEN = os.environ.get('BOT_TOKEN')
-    WEBHOOK_URL = os.environ.get('WEBHOOK_URL')
+    TELEGRAM_BOT_TOKEN = BOT_TOKEN
+    WEBHOOK_URL_VAR = WEBHOOK_URL
     
-    if not TELEGRAM_BOT_TOKEN or not WEBHOOK_URL:
-        return jsonify({'status': 'error', 'message': f'Bot token: {"configured" if TELEGRAM_BOT_TOKEN else "missing"}, Webhook URL: {"configured" if WEBHOOK_URL else "missing"}'}), 400
+    if not TELEGRAM_BOT_TOKEN or not WEBHOOK_URL_VAR:
+        return jsonify({'status': 'error', 'message': f'Bot token: {"configured" if TELEGRAM_BOT_TOKEN else "missing"}, Webhook URL: {"configured" if WEBHOOK_URL_VAR else "missing"}'}), 400
     
     try:
         api_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/setWebhook"
-        response = requests.post(api_url, data={'url': WEBHOOK_URL})
+        response = requests.post(api_url, data={'url': WEBHOOK_URL_VAR})
         
         if response.status_code == 200:
             set_telegram_bot_commands()
-            print(f"✅ Telegram webhook set successfully to: {WEBHOOK_URL}")
-            return jsonify({'status': 'success', 'message': 'Webhook set successfully', 'webhook_url': WEBHOOK_URL}), 200
+            print(f"✅ Telegram webhook set successfully to: {WEBHOOK_URL_VAR}")
+            return jsonify({'status': 'success', 'message': 'Webhook set successfully', 'webhook_url': WEBHOOK_URL_VAR}), 200
         else:
             print(f"❌ Failed to set webhook: {response.text}")
             return jsonify({'status': 'error', 'message': f'Failed to set webhook: {response.text}'}), 400
     except Exception as e:
         print(f"❌ Error setting webhook: {str(e)}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
+    
+    return jsonify({'status': 'success', 'message': 'Webhook set successfully', 'webhook_url': WEBHOOK_URL_VAR}), 200
 
 @app.route('/webhook', methods=['POST'])
 def webhook_handler():
