@@ -382,7 +382,7 @@ def validate_telegram_initData(initData_string, bot_token):
         received_hash = parts['hash']
         print(f"📍 Received hash: {received_hash}")
         
-        EXCLUDED_FIELDS = {'hash', 'signature'}
+        EXCLUDED_FIELDS = {'hash'}
         
         data_check_fields = []
         for k, v in sorted(parts.items()):
