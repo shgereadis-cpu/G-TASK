@@ -688,14 +688,12 @@ def process_telegram_message(update_data):
                     if user:
                         message_text = f"👋 እንኳን ደህና መጡ፣ {first_name}! \n\n" \
                                       f"🎉 አሁን ወደ G-Task Manager ራሂ ተመዝግበዋል!\n\n" \
-                                      f"💼 ሥራ ወስደን ገንዘብ ይቀዩ - ብር 10 ለእያንዳንዱ ስራ!\n\n" \
-                                      f"🔐 <a href='https://g-task.onrender.com/telegram_auto_login/{generate_telegram_login_token(user)}'>🌐 ወደ ዌብሳይት ይሂዱ</a>"
+                                      f"💼 ሥራ ወስደን ገንዘብ ይቀዩ - ብር 10 ለእያንዳንዱ ስራ!"
                     else:
                         message_text = "⚠️ Registration failed. Please try again."
                 else:
                     message_text = f"👋 እንዴት ሁዋል፣ {first_name}!\n\n" \
-                                  f"💼 ፍጠን ስራ ውሰድ 및 ገንዘብ ያጀምሩ!\n\n" \
-                                  f"🔐 <a href='https://g-task.onrender.com/telegram_auto_login/{generate_telegram_login_token(user)}'>🌐 ወደ ዌብሳይት ይሂዱ</a>"
+                                  f"💼 ፍጠን ስራ ውሰድ እና ገንዘብ ያጀምሩ!"
             
             elif text == '/balance':
                 if user:
@@ -737,7 +735,26 @@ def process_telegram_message(update_data):
             'text': message_text,
             'parse_mode': 'HTML'
         }
-        print(f"🔍 DEBUG: Sending payload: {payload}")
+        
+        # Add Inline Keyboard button for Mini App if /start or /help
+        if text in ['/start', '/help']:
+            import json
+            keyboard = {
+                "inline_keyboard": [
+                    [
+                        {
+                            "text": "🚀 Open G-Task Mini App",
+                            "web_app": {
+                                "url": "https://g-task.onrender.com/miniapp"
+                            }
+                        }
+                    ]
+                ]
+            }
+            payload['reply_markup'] = json.dumps(keyboard)
+            print(f"✅ Added web_app button to /start command")
+        
+        print(f"🔍 DEBUG: Sending payload: {str(payload)[:200]}...")
         
         try:
             response = requests.post(api_url, data=payload, timeout=10)
