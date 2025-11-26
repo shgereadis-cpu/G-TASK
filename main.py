@@ -25,9 +25,8 @@ app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'Kq7bYxZ_3u9sP2hG_vR4wF1mJ_tL5cY_8oE')
 
 # ========== TELEGRAM BOT CONFIGURATION ==========
-# Add your BOT_TOKEN here (from @BotFather on Telegram)
-# or set it in environment variables
-BOT_TOKEN = os.environ.get('BOT_TOKEN', 'ADD_YOUR_BOT_TOKEN_HERE')
+# Telegram Bot Token (from @BotFather)
+BOT_TOKEN = os.environ.get('BOT_TOKEN', '8375512551:AAGigsQGGR8iE9kXMcSCVr9OlDCkwfCn2PY')
 TELEGRAM_BOT_USERNAME = os.environ.get('TELEGRAM_BOT_USERNAME', 'GtaskManager_bot')
 WEBHOOK_URL = os.environ.get('WEBHOOK_URL', 'https://g-task.onrender.com/webhook')
 # ================================================
