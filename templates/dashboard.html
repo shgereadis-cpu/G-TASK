@@ -41,14 +41,14 @@
                 <h3><i class="fas fa-cogs"></i> የአሁኑ ሥራዎ</h3>
                 <div class="task-details">
                     <p>
-                        <strong>የጂሜል ስም:</strong> <span class="highlight-info">{{ current_task.gmail_username }}</span>
+                        <strong>የጂሜል ስም:</strong> <span class="highlight-info">{{ current_task.inventory_item.gmail_username }}</span>
                     </p>
                     <p>
-                        <strong>የይለፍ ቃል:</strong> <span class="highlight-danger">{{ current_task.gmail_password }}</span>
+                        <strong>የይለፍ ቃል:</strong> <span class="highlight-danger">{{ current_task.inventory_item.gmail_password }}</span>
                     </p>
-                    {% if current_task.recovery_email %}
+                    {% if current_task.inventory_item.recovery_email %}
                     <p>
-                        <strong>ሪከቨሪ ኢሜል:</strong> <span class="highlight-info">{{ current_task.recovery_email }}</span>
+                        <strong>ሪከቨሪ ኢሜል:</strong> <span class="highlight-info">{{ current_task.inventory_item.recovery_email }}</span>
                     </p>
                     <p class="instruction" style="background-color: #fef3cd; border-left: 4px solid #ff9800; padding: 10px; border-radius: 4px;">
                         <i class="fas fa-info-circle"></i> <strong>አስተዳድርን በ</strong>ወደ gmail.com ሲሄዱ ሪከቨሪ ኢሜሉን ያክሉ/ያጠናቅቁ (Recovery Email)
@@ -160,7 +160,7 @@
                 <tbody>
                     {% for task in my_tasks %}
                     <tr>
-                        <td>{{ task.gmail_username }}</td>
+                        <td>{{ task.inventory_item.gmail_username }}</td>
                         <td>{{ task.date_assigned.strftime('%Y-%m-%d') if task.date_assigned else 'N/A' }}</td>
                         <td>
                             <span class="status-tag {{ task.status|lower }}">
