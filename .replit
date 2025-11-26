@@ -15,10 +15,10 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Flask App"
+args = "Flask Dev Server"
 
 [[workflows.workflow]]
-name = "Flask App"
+name = "Flask Dev Server"
 author = "agent"
 
 [[workflows.workflow.tasks]]
@@ -32,10 +32,6 @@ outputType = "webview"
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 33243
-externalPort = 3003
 
 [[ports]]
 localPort = 34393
@@ -84,3 +80,8 @@ ADMIN_USERNAME = "Admin"
 ADMIN_PASSWORD = "070781"
 TELEGRAM_BOT_USERNAME = "GtaskManager_bot"
 WEBHOOK_URL = "https://80920867-bcfe-40c3-8c97-a2e022a1c795-00-2wgpp1vtr7kmu.riker.replit.dev/telegram/webhook"
+
+[deployment]
+deploymentTarget = "autoscale"
+run = ["gunicorn", "--bind=0.0.0.0:5000", "--workers=2", "main:app"]
+build = ["pip", "install", "-r", "requirements.txt"]
