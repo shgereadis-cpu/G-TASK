@@ -311,8 +311,8 @@ def index():
 @app.route('/signup', methods=('GET', 'POST'))
 def signup():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '').strip()
         if not username or not password:
             flash('እባክዎ ሁሉንም መስኮች ይሙሉ!', 'error')
         elif len(password) < 6:
@@ -320,31 +320,44 @@ def signup():
         else:
             try:
                 with app.app_context():
+                    # Check if username already exists
+                    existing_user = User.query.filter_by(username=username).first()
+                    if existing_user:
+                        flash(f'የተጠቃሚ ስም "{username}" ቀድሞውኑ አለ። ሌላ ይሞክሩ።', 'error')
+                        return render_template('signup.html')
+                    
                     password_hash = generate_password_hash(password)
                     new_user = User(username=username, password_hash=password_hash)
                     db.session.add(new_user)
                     db.session.commit()
                 flash('በተሳካ ሁኔታ ተመዝግበዋል! አሁን መግባት ይችላሉ።', 'success')
                 return redirect(url_for('login'))
-            except Exception:
-                flash(f'የተጠቃሚ ስም "{username}" ቀድሞውኑ አለ። ሌላ ይሞክሩ።', 'error')
+            except Exception as e:
+                db.session.rollback()
+                print(f"❌ Signup error: {str(e)}")
+                flash(f'ስህተት: {str(e)[:50]}', 'error')
     return render_template('signup.html')
 
 @app.route('/login', methods=('GET', 'POST'))
 def login():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        with app.app_context():
-            user = User.query.filter_by(username=username).first()
-        if user and check_password_hash(user.password_hash, password):
-            # Validate device
-            session['user_id'] = user.id
-            session['username'] = user.username
-            flash('በተሳካ ሁኔታ ገብተዋል!', 'success')
-            return redirect(url_for('dashboard'))
-        else:
-            flash('ትክክለኛ ያልሆነ የተጠቃሚ ስም ወይም የይለፍ ቃል!', 'error')
+        try:
+            username = request.form.get('username', '').strip()
+            password = request.form.get('password', '').strip()
+            with app.app_context():
+                user = User.query.filter_by(username=username).first()
+            
+            if user and check_password_hash(user.password_hash, password):
+                session['user_id'] = user.id
+                session['username'] = user.username
+                flash('በተሳካ ሁኔታ ገብተዋል!', 'success')
+                return redirect(url_for('dashboard'))
+            else:
+                flash('ትክክለኛ ያልሆነ የተጠቃሚ ስም ወይም የይለፍ ቃል!', 'error')
+        except Exception as e:
+            print(f"❌ Login error: {str(e)}")
+            flash(f'ሰርቨር ስህተት: {str(e)[:50]}', 'error')
+    
     telegram_bot_username = os.environ.get('TELEGRAM_BOT_USERNAME')
     return render_template('login.html', telegram_bot_username=telegram_bot_username)
 
