@@ -175,30 +175,50 @@ def init_db():
             print(f"⚠️ Error creating tables: {str(e)}")
             return
         
-        # Add missing columns to payouts table
+        # Add missing columns to existing tables
         from sqlalchemy import text, inspect
         try:
             inspector = inspect(db.engine)
+            
+            # Check and add missing columns to users table
+            if 'users' in inspector.get_table_names():
+                users_columns = [col['name'] for col in inspector.get_columns('users')]
+                users_columns_to_add = [
+                    ('telegram_login_token', "VARCHAR(256)"),
+                    ('telegram_token_expires', "TIMESTAMP"),
+                ]
+                
+                for col_name, col_def in users_columns_to_add:
+                    if col_name not in users_columns:
+                        try:
+                            db.session.execute(text(f'ALTER TABLE users ADD COLUMN {col_name} {col_def}'))
+                            db.session.commit()
+                            print(f"✅ Added {col_name} column to users table")
+                        except Exception as e:
+                            db.session.rollback()
+                            print(f"⚠️ {col_name} already exists or error: {str(e)[:80]}")
+            
+            # Check and add missing columns to payouts table
             if 'payouts' in inspector.get_table_names():
                 payouts_columns = [col['name'] for col in inspector.get_columns('payouts')]
                 
-                columns_to_add = [
+                payouts_columns_to_add = [
                     ('payment_method', "VARCHAR(50) DEFAULT 'Telebirr'"),
                     ('recipient_name', "VARCHAR(255) DEFAULT ''"),
                     ('payment_details', "VARCHAR(255) DEFAULT ''"),
                 ]
                 
-                for col_name, col_def in columns_to_add:
+                for col_name, col_def in payouts_columns_to_add:
                     if col_name not in payouts_columns:
                         try:
                             db.session.execute(text(f'ALTER TABLE payouts ADD COLUMN {col_name} {col_def}'))
                             db.session.commit()
-                            print(f"Added {col_name} column to payouts table")
+                            print(f"✅ Added {col_name} column to payouts table")
                         except Exception as e:
                             db.session.rollback()
-                            print(f"Column {col_name} already exists or error: {str(e)[:100]}")
+                            print(f"⚠️ {col_name} already exists or error: {str(e)[:80]}")
         except Exception as e:
-            print(f"Error checking columns: {str(e)[:100]}")
+            print(f"⚠️ Error checking/adding columns: {str(e)[:100]}")
         
         # ነባሪ የአድሚን አካውንት - only if ADMIN_USERNAME and ADMIN_PASSWORD are set
         admin_username = os.environ.get('ADMIN_USERNAME')

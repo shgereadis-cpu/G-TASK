@@ -1,0 +1,31 @@
+=
+🔔 WEBHOOK RECEIVED - POST /webhook
+============================================================
+🔍 Content-Type: application/json
+🔍 Request method: POST
+📥 JSON parsed successfully
+📥 Webhook data keys: ['update_id', 'message']
+🔍 BOT_TOKEN check: configured=True, length=46
+============================================================
+🔍 PROCESS_TELEGRAM_MESSAGE called
+============================================================
+🔍 BOT_TOKEN value check:
+   - Is not None: True
+   - Is not empty string: True
+   - Length: 46
+   - First 20 chars: 8535083603:AAGAFlbMY
+📱 Telegram message received: chat_id=7716902802, user_id=7716902802, text='/start'
+🔍 DEBUG: Full message object: {'message_id': 4, 'from': {'id': 7716902802, 'is_bot': False, 'first_name': '..-/)любовь', 'language_code': 'en'}, 'chat': {'id': 7716902802, 'first_name': '..-/)любовь', 'type': 'private'}, 'date': 1764184342, 'text': '/start', 'entities': [{'offset': 0, 'length': 6, 'type': 'bot_command'}]}
+❌ Error processing message: (psycopg2.errors.UndefinedColumn) column users.telegram_login_token does not exist
+LINE 1: ...g_payout, users.telegram_id AS users_telegram_id, users.tele...
+                                                             ^
+[SQL: SELECT users.id AS users_id, users.username AS users_username, users.password_hash AS users_password_hash, users.is_admin AS users_is_admin, users.total_earned AS users_total_earned, users.pending_payout AS users_pending_payout, users.telegram_id AS users_telegram_id, users.telegram_login_token AS users_telegram_login_token, users.telegram_token_expires AS users_telegram_token_expires 
+FROM users 
+WHERE users.telegram_id = %(telegram_id_1)s 
+ LIMIT %(param_1)s]
+[parameters: {'telegram_id_1': '7716902802', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+✅ Message processing result: False
+127.0.0.1 - - [26/Nov/2025:19:12:22 +0000] "POST /webhook HTTP/1.1" 200 16 "-" "-"
+🔐 PostgreSQL connection configured with SSL
+Need better ways to work with logs? Try theRender CLI, Render MCP Server, or set up a log stream integra
