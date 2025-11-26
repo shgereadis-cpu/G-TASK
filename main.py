@@ -11,6 +11,7 @@ import hmac
 import secrets
 import requests
 from datetime import datetime, timedelta
+from urllib.parse import unquote
 from flask import Flask, render_template, request, session, redirect, url_for, flash, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
@@ -366,12 +367,11 @@ def validate_telegram_initData(initData_string, bot_token):
         
         print(f"📥 Received initData string (first 100 chars): {initData_string[:100]}")
         
-        # Parse the initData string - KEEP VALUES URL-ENCODED
         parts = {}
         for item in initData_string.split('&'):
             if '=' in item:
                 key, value = item.split('=', 1)
-                parts[key] = value
+                parts[key] = unquote(value)
         
         print(f"🔍 Parsed {len(parts)} fields from initData: {list(parts.keys())}")
         
@@ -382,13 +382,8 @@ def validate_telegram_initData(initData_string, bot_token):
         received_hash = parts['hash']
         print(f"📍 Received hash: {received_hash}")
         
-        # CRITICAL: Only include valid Mini App fields in data_check_string
-        # Exclude: 'hash' and 'signature' (signature is NOT part of Mini App initData)
-        # Include: user, auth_date, query_id, start_param, chat_instance
         EXCLUDED_FIELDS = {'hash', 'signature'}
         
-        # Build data_check_string with SORTED fields (alphabetically)
-        # Format: "key1=value1\nkey2=value2\n..." 
         data_check_fields = []
         for k, v in sorted(parts.items()):
             if k not in EXCLUDED_FIELDS:
