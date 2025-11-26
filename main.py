@@ -354,48 +354,65 @@ def validate_telegram_initData(initData_string, bot_token):
     
     initData format: "user=%7B...%7D&chat_instance=...&hash=..."
     Per Telegram docs: secret_key = HMAC-SHA256("WebAppData", BOT_TOKEN)
+    
+    CRITICAL: Use URL-ENCODED values as-is (do NOT decode)
     """
     try:
         if not initData_string or not bot_token:
             print("❌ Missing initData or bot_token")
             return False, None
         
-        # Parse the initData string
+        print(f"📥 Received initData string (first 100 chars): {initData_string[:100]}")
+        
+        # Parse the initData string - KEEP VALUES URL-ENCODED
         parts = {}
         for item in initData_string.split('&'):
             if '=' in item:
                 key, value = item.split('=', 1)
                 parts[key] = value
         
+        print(f"🔍 Parsed {len(parts)} fields from initData")
+        
         if 'hash' not in parts:
             print("❌ No hash in initData")
             return False, None
         
         received_hash = parts['hash']
+        print(f"📍 Received hash: {received_hash}")
         
-        # Create data_check_string: all fields except 'hash', sorted alphabetically, joined with newlines
-        data_check_string = '\n'.join([
-            f"{k}={v}" for k, v in sorted(parts.items()) if k != 'hash'
-        ])
+        # CRITICAL: Create data_check_string with SORTED fields (excluding 'hash')
+        # Format: "key1=value1\nkey2=value2\n..." with alphabetical key ordering
+        # Values MUST remain URL-encoded as received from Telegram
+        data_check_fields = []
+        for k, v in sorted(parts.items()):
+            if k != 'hash':
+                data_check_fields.append(f"{k}={v}")
         
-        print(f"🔍 Data check string:\n{data_check_string[:100]}...")
+        data_check_string = '\n'.join(data_check_fields)
         
-        # FIXED: Use Telegram's correct secret key derivation
-        # Per Telegram spec: secret_key = HMAC-SHA256("WebAppData", BOT_TOKEN)
+        print(f"🔍 Data check string ({len(data_check_fields)} fields):")
+        print(f"   {data_check_string[:200]}")
+        
+        # Derive secret key: HMAC-SHA256("WebAppData", BOT_TOKEN)
         secret_key = hmac.new(b"WebAppData", bot_token.encode(), hashlib.sha256).digest()
+        print(f"🔑 Secret key derived (HMAC-SHA256 over 'WebAppData')")
         
-        # Calculate hash: HMAC-SHA256
+        # Calculate hash: HMAC-SHA256(secret_key, data_check_string)
+        # Use .encode() to convert string to bytes
         calculated_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
         
-        print(f"🔐 Hash comparison:")
+        print(f"🔐 Hash Comparison:")
         print(f"   Received:   {received_hash}")
         print(f"   Calculated: {calculated_hash}")
+        print(f"   Match: {'✅ YES' if calculated_hash == received_hash else '❌ NO'}")
         
         if calculated_hash != received_hash:
-            print("❌ Hash validation failed!")
+            print("❌ Hash validation FAILED!")
+            print(f"   Data check string length: {len(data_check_string)}")
+            print(f"   Data check string bytes: {data_check_string.encode()}")
             return False, None
         
-        print("✅ Hash validation successful!")
+        print("✅ Hash validation SUCCESSFUL!")
         return True, parts
         
     except Exception as e:
