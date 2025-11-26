@@ -353,32 +353,44 @@ def miniapp_login():
     """Handle Telegram Mini App login"""
     try:
         data = request.get_json()
+        print(f"📥 Received Mini App login data: {data}")
+        
         telegram_id = str(data.get('id'))
         first_name = data.get('first_name', 'User')
         username = data.get('username', f"user_{telegram_id}")
         
-        if not telegram_id:
+        print(f"🔍 Parsed: id={telegram_id}, first_name={first_name}, username={username}")
+        
+        if not telegram_id or telegram_id == 'None':
+            print(f"❌ Invalid Telegram ID: {telegram_id}")
             return jsonify({'success': False, 'message': 'Invalid Telegram ID'}), 400
         
         # Auto-register or get existing user
-        user = User.query.filter_by(telegram_id=telegram_id).first()
-        
-        if not user:
-            # Auto-register new user
-            user = auto_register_telegram_user(telegram_id, first_name)
+        with app.app_context():
+            user = User.query.filter_by(telegram_id=telegram_id).first()
+            
             if not user:
-                return jsonify({'success': False, 'message': 'Registration failed'}), 500
-        
-        # Set session
-        session['user_id'] = user.id
-        session['username'] = user.username
-        
-        print(f"✅ Mini App login successful: {user.username} (Telegram ID: {telegram_id})")
-        return jsonify({'success': True, 'message': 'Logged in successfully', 'redirect': '/dashboard'}), 200
+                print(f"👤 New user detected, auto-registering: {first_name} (ID: {telegram_id})")
+                # Auto-register new user
+                user = auto_register_telegram_user(telegram_id, first_name)
+                if not user:
+                    print(f"❌ Auto-registration failed for {telegram_id}")
+                    return jsonify({'success': False, 'message': 'Registration failed'}), 500
+            else:
+                print(f"✅ Existing user found: {user.username}")
+            
+            # Set session
+            session['user_id'] = user.id
+            session['username'] = user.username
+            
+            print(f"✅ Mini App login successful: {user.username} (Telegram ID: {telegram_id})")
+            return jsonify({'success': True, 'message': 'Logged in successfully', 'redirect': '/dashboard'}), 200
     
     except Exception as e:
         print(f"❌ Mini App login error: {str(e)}")
-        return jsonify({'success': False, 'message': 'Login failed'}), 500
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'message': f'Login failed: {str(e)}'}), 500
 
 @app.route('/logout')
 def logout():
