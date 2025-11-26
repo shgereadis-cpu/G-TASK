@@ -24,6 +24,14 @@ app = Flask(__name__)
 # SECRET KEY - Render-compatible (from environment variables)
 app.secret_key = os.environ.get('SECRET_KEY', 'Kq7bYxZ_3u9sP2hG_vR4wF1mJ_tL5cY_8oE')
 
+# ========== TELEGRAM BOT CONFIGURATION ==========
+# Add your BOT_TOKEN here (from @BotFather on Telegram)
+# or set it in environment variables
+BOT_TOKEN = os.environ.get('BOT_TOKEN', 'ADD_YOUR_BOT_TOKEN_HERE')
+TELEGRAM_BOT_USERNAME = os.environ.get('TELEGRAM_BOT_USERNAME', 'GtaskManager_bot')
+WEBHOOK_URL = os.environ.get('WEBHOOK_URL', 'https://g-task.onrender.com/webhook')
+# ================================================
+
 # Database Configuration (Neon/PostgreSQL or SQLite fallback)
 # የ DATABASE_URL ሚስጥር ከ Replit Secrets ይነበባል
 database_url = os.environ.get('DATABASE_URL', 'sqlite:///g_task_manager.db')
@@ -245,9 +253,7 @@ def generate_telegram_login_token(user):
     return token
 
 def send_notification_to_all_telegram_users(message):
-    import requests
-    
-    TELEGRAM_BOT_TOKEN = os.environ.get('BOT_TOKEN')
+    TELEGRAM_BOT_TOKEN = BOT_TOKEN
     
     if not TELEGRAM_BOT_TOKEN:
         print("Warning: TELEGRAM_BOT_TOKEN not configured. Skipping notification.")
