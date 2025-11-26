@@ -918,12 +918,6 @@ def daily_checkin():
         if not user:
             return jsonify({'success': False, 'message': 'User not found'}), 404
         
-        # Validate device
-        is_valid, device_msg = validate_device(user_id, request)
-        if not is_valid:
-            print(f"🚨 Daily check-in blocked for {user.username}: Device fraud")
-            return jsonify({'success': False, 'message': device_msg}), 400
-        
         today = func.current_date()
         already_checked_in = DailyCheckIn.query.filter(
             DailyCheckIn.user_id == user_id,
