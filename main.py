@@ -352,10 +352,12 @@ def validate_telegram_initData(initData_string, bot_token):
     """
     Validate Telegram Mini App initData using HMAC-SHA256 (Telegram spec)
     
-    initData format: "user=%7B...%7D&chat_instance=...&hash=..."
-    Per Telegram docs: secret_key = HMAC-SHA256("WebAppData", BOT_TOKEN)
+    Per Telegram Mini App docs:
+    - Secret key = HMAC-SHA256("WebAppData", BOT_TOKEN)
+    - Data check string = sorted fields (excluding 'hash' and 'signature')
+    - Only include: user, auth_date, query_id, start_param, chat_instance
     
-    CRITICAL: Use URL-ENCODED values as-is (do NOT decode)
+    CRITICAL: Keep URL-ENCODED values as-is (do NOT decode)
     """
     try:
         if not initData_string or not bot_token:
@@ -371,7 +373,7 @@ def validate_telegram_initData(initData_string, bot_token):
                 key, value = item.split('=', 1)
                 parts[key] = value
         
-        print(f"🔍 Parsed {len(parts)} fields from initData")
+        print(f"🔍 Parsed {len(parts)} fields from initData: {list(parts.keys())}")
         
         if 'hash' not in parts:
             print("❌ No hash in initData")
@@ -380,39 +382,43 @@ def validate_telegram_initData(initData_string, bot_token):
         received_hash = parts['hash']
         print(f"📍 Received hash: {received_hash}")
         
-        # CRITICAL: Create data_check_string with SORTED fields (excluding 'hash')
-        # Format: "key1=value1\nkey2=value2\n..." with alphabetical key ordering
-        # Values MUST remain URL-encoded as received from Telegram
+        # CRITICAL: Only include valid Mini App fields in data_check_string
+        # Exclude: 'hash' and 'signature' (signature is NOT part of Mini App initData)
+        # Include: user, auth_date, query_id, start_param, chat_instance
+        EXCLUDED_FIELDS = {'hash', 'signature'}
+        
+        # Build data_check_string with SORTED fields (alphabetically)
+        # Format: "key1=value1\nkey2=value2\n..." 
         data_check_fields = []
         for k, v in sorted(parts.items()):
-            if k != 'hash':
+            if k not in EXCLUDED_FIELDS:
                 data_check_fields.append(f"{k}={v}")
         
         data_check_string = '\n'.join(data_check_fields)
         
-        print(f"🔍 Data check string ({len(data_check_fields)} fields):")
-        print(f"   {data_check_string[:200]}")
+        print(f"🔍 Data check string ({len(data_check_fields)} fields included):")
+        print(f"   Excluded: {EXCLUDED_FIELDS}")
+        print(f"   Included: {[f for f, _ in sorted(parts.items()) if f not in EXCLUDED_FIELDS]}")
+        print(f"   {data_check_string[:150]}...")
         
         # Derive secret key: HMAC-SHA256("WebAppData", BOT_TOKEN)
         secret_key = hmac.new(b"WebAppData", bot_token.encode(), hashlib.sha256).digest()
-        print(f"🔑 Secret key derived (HMAC-SHA256 over 'WebAppData')")
+        print(f"🔑 Secret key derived (HMAC-SHA256('WebAppData', token))")
         
         # Calculate hash: HMAC-SHA256(secret_key, data_check_string)
-        # Use .encode() to convert string to bytes
         calculated_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
         
-        print(f"🔐 Hash Comparison:")
+        print(f"🔐 Hash Validation:")
         print(f"   Received:   {received_hash}")
         print(f"   Calculated: {calculated_hash}")
         print(f"   Match: {'✅ YES' if calculated_hash == received_hash else '❌ NO'}")
         
         if calculated_hash != received_hash:
             print("❌ Hash validation FAILED!")
-            print(f"   Data check string length: {len(data_check_string)}")
-            print(f"   Data check string bytes: {data_check_string.encode()}")
+            print(f"   Data string length: {len(data_check_string)} bytes")
             return False, None
         
-        print("✅ Hash validation SUCCESSFUL!")
+        print("✅ Hash validation SUCCESSFUL! User authenticated.")
         return True, parts
         
     except Exception as e:
