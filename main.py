@@ -291,7 +291,7 @@ def send_payment_notification(user_id, amount):
     """Send payment approval notification to Telegram user"""
     import requests
     
-    TELEGRAM_BOT_TOKEN = os.environ.get('BOT_TOKEN')
+    TELEGRAM_BOT_TOKEN = BOT_TOKEN
     
     if not TELEGRAM_BOT_TOKEN:
         print("Warning: TELEGRAM_BOT_TOKEN not configured. Skipping payment notification.")
@@ -412,7 +412,7 @@ def telegram_auto_login(token):
 
 @app.route('/telegram_login_check', methods=['GET'])
 def telegram_login_check():
-    TELEGRAM_BOT_TOKEN = os.environ.get('BOT_TOKEN')
+    TELEGRAM_BOT_TOKEN = BOT_TOKEN
     
     if not TELEGRAM_BOT_TOKEN:
         flash('Telegram login is not configured. Please contact administrator.', 'error')
@@ -499,7 +499,7 @@ def set_telegram_bot_commands():
     """Set bot commands menu in Telegram"""
     import requests
     
-    TELEGRAM_BOT_TOKEN = os.environ.get('BOT_TOKEN')
+    TELEGRAM_BOT_TOKEN = BOT_TOKEN
     if not TELEGRAM_BOT_TOKEN:
         print("❌ BOT_TOKEN not configured!")
         return False
