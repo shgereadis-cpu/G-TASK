@@ -884,11 +884,10 @@ def dashboard():
     if not is_logged_in():
         return redirect(url_for('miniapp'))
     
-    with app.app_context():
-        user = User.query.filter_by(id=session['user_id']).first()
-        current_task = Task.query.filter_by(user_id=session['user_id'], status='PENDING').first()
-        available_task = Inventory.query.filter_by(status='AVAILABLE').first()
-        my_tasks = Task.query.filter_by(user_id=session['user_id']).all()
+    user = User.query.filter_by(id=session['user_id']).first()
+    current_task = Task.query.filter_by(user_id=session['user_id'], status='PENDING').first()
+    available_task = Inventory.query.filter_by(status='AVAILABLE').first()
+    my_tasks = Task.query.filter_by(user_id=session['user_id']).all()
     
     return render_template('dashboard.html', 
                          user=user, 
