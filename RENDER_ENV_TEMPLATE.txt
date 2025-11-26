@@ -1,0 +1,54 @@
+🚀 RENDER DEPLOYMENT - ENVIRONMENT VARIABLES TEMPLATE
+
+Copy these variables into Render Dashboard → Environment:
+
+=======================================================
+DATABASE_URL
+postgresql://user:password@host/database?sslmode=require
+
+=======================================================
+BOT_TOKEN
+(Paste your NEW Telegram Bot Token from @BotFather)
+
+=======================================================
+TELEGRAM_BOT_USERNAME
+(Paste your NEW bot username - WITHOUT the @ symbol)
+Example: GtaskManager_v2_bot
+
+=======================================================
+WEBHOOK_URL
+https://g-task.onrender.com/webhook
+
+=======================================================
+SECRET_KEY
+(Generate random: python -c "import secrets; print(secrets.token_urlsafe(32))")
+Example: FwU7vB3_pZ8mKq2xL9jC_tR5hY4nG1sD
+
+=======================================================
+ADMIN_USERNAME
+Admin
+
+=======================================================
+ADMIN_PASSWORD
+070781
+
+=======================================================
+
+BUILD COMMAND:
+pip install -r requirements.txt
+
+=======================================================
+
+START COMMAND:
+gunicorn --bind=0.0.0.0:5000 --workers=2 main:app
+
+=======================================================
+
+DEPLOYMENT REGION:
+(Choose closest to your users)
+
+=======================================================
+
+After setting these variables, Render will auto-deploy!
+
+✅ Visit https://g-task.onrender.com to test
