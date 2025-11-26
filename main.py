@@ -36,8 +36,28 @@ WEBHOOK_URL = os.environ.get('WEBHOOK_URL', 'https://g-task.onrender.com/webhook
 database_url = os.environ.get('DATABASE_URL', 'sqlite:///g_task_manager.db')
 # Remove extra quotes and fix HTML encoding if present
 database_url = database_url.strip("'\"").replace('&amp;', '&')
+
+# Add SSL support for Render PostgreSQL connections
+if database_url.startswith('postgresql://') or database_url.startswith('postgres://'):
+    # Fix old postgres:// to postgresql://
+    if database_url.startswith('postgres://'):
+        database_url = database_url.replace('postgres://', 'postgresql://', 1)
+    
+    # Add SSL mode if not present
+    if '?' not in database_url:
+        database_url = database_url + '?sslmode=require'
+    elif 'sslmode' not in database_url:
+        database_url = database_url + '&sslmode=require'
+    
+    print(f"🔐 PostgreSQL connection configured with SSL")
+
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_pre_ping': True,
+    'pool_recycle': 3600,
+    'connect_args': {'connect_timeout': 10}
+}
 
 db = SQLAlchemy(app)
 
