@@ -1,0 +1,38 @@
+✅ NEW BOT UPDATED IN CODE
+================================
+
+Bot Details:
+- Bot URL: http://t.me/GTASKpro_bot
+- Bot Username: GTASKpro_bot
+- Bot Token: 8535083603:AAGAFlbMYewLE_bv_GIlXJ1Jzd0epHY_7M0
+
+Updated Files:
+- ✅ main.py (lines 29-31)
+
+Webhook Configuration:
+- Webhook URL: https://g-task.onrender.com/webhook
+
+Next Steps for Render Deployment:
+================================
+
+1. COMMIT CHANGES:
+   git add main.py
+   git commit -m "Update bot to @GTASKpro_bot for production"
+   git push origin main
+
+2. SET TELEGRAM WEBHOOK (Message @BotFather):
+   /setwebhook
+   Select @GTASKpro_bot
+   Paste: https://g-task.onrender.com/webhook
+
+3. RENDER ENVIRONMENT VARIABLES:
+   BOT_TOKEN = 8535083603:AAGAFlbMYewLE_bv_GIlXJ1Jzd0epHY_7M0
+   TELEGRAM_BOT_USERNAME = GTASKpro_bot
+   (Other variables stay same)
+
+4. DEPLOY:
+   - Push code triggers Render auto-deploy
+   - Render will use environment variables
+   - Bot webhook processes messages
+
+✅ READY FOR PRODUCTION!
