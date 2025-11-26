@@ -30,7 +30,7 @@ function waitForTelegramWebApp(callback, attempt = 0) {
     } else if (attempt < 50) {
         setTimeout(() => waitForTelegramWebApp(callback, attempt + 1), 100);
     } else {
-        console.error('Telegram WebApp SDK not available after 5 seconds');
+        console.error('❌ Telegram WebApp SDK not available after 5 seconds');
         document.getElementById('login-btn').disabled = true;
         document.getElementById('login-btn').textContent = 'Telegram Mini App SDK not available';
     }
@@ -44,31 +44,37 @@ waitForTelegramWebApp(function() {
     
     loginBtn.onclick = function() {
         try {
-            // Get user data from Telegram SDK
+            // Get the signed initData from Telegram
+            const initData = TelegramWebApp.initData;
             const userData = TelegramWebApp.initDataUnsafe?.user;
             
-            console.log('📱 Telegram user data:', userData);
-            console.log('🔍 Full initDataUnsafe:', TelegramWebApp.initDataUnsafe);
+            console.log('📱 Telegram initData:', initData ? 'Present' : 'Missing');
+            console.log('👤 Telegram user data:', userData);
             
-            if (!userData || !userData.id) {
-                console.error('❌ No user data available');
-                console.log('Available data:', {
-                    initDataUnsafe: TelegramWebApp.initDataUnsafe,
-                    initData: TelegramWebApp.initData ? 'Present' : 'Missing'
-                });
-                alert('Unable to get user data from Telegram. Please ensure you are using the official Telegram app and opening this as a Mini App.');
+            if (!initData) {
+                console.error('❌ No initData available');
+                alert('Unable to authenticate with Telegram. initData not found.');
                 return;
             }
             
-            console.log('✅ Sending user data to backend:', userData);
+            if (!userData || !userData.id) {
+                console.error('❌ No user data available');
+                alert('Unable to get user data from Telegram');
+                return;
+            }
             
-            // Send to backend
+            console.log('✅ Sending signed initData to backend for validation');
+            
+            // Send SIGNED initData to backend (not just user data!)
             fetch('/miniapp_login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(userData)
+                body: JSON.stringify({
+                    initData: initData,  // IMPORTANT: Send the signed string
+                    user: userData       // Also send user data for reference
+                })
             })
             .then(response => {
                 console.log('📦 Response status:', response.status);

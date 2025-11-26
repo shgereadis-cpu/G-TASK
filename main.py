@@ -348,18 +348,90 @@ def miniapp():
         return redirect(url_for('dashboard'))
     return render_template('miniapp.html')
 
+def validate_telegram_initData(initData_string, bot_token):
+    """
+    Validate Telegram Mini App initData using HMAC-SHA256
+    
+    initData format: "user=%7B...%7D&chat_instance=...&hash=..."
+    """
+    try:
+        if not initData_string or not bot_token:
+            print("❌ Missing initData or bot_token")
+            return False, None
+        
+        # Parse the initData string
+        parts = {}
+        for item in initData_string.split('&'):
+            if '=' in item:
+                key, value = item.split('=', 1)
+                parts[key] = value
+        
+        if 'hash' not in parts:
+            print("❌ No hash in initData")
+            return False, None
+        
+        received_hash = parts['hash']
+        
+        # Create data_check_string: all fields except 'hash', sorted alphabetically, joined with newlines
+        data_check_string = '\n'.join([
+            f"{k}={v}" for k, v in sorted(parts.items()) if k != 'hash'
+        ])
+        
+        print(f"🔍 Data check string:\n{data_check_string[:100]}...")
+        
+        # Calculate secret key: SHA256(bot_token)
+        secret_key = hashlib.sha256(bot_token.encode()).digest()
+        
+        # Calculate hash: HMAC-SHA256
+        calculated_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
+        
+        print(f"🔐 Hash comparison:")
+        print(f"   Received:   {received_hash}")
+        print(f"   Calculated: {calculated_hash}")
+        
+        if calculated_hash != received_hash:
+            print("❌ Hash validation failed!")
+            return False, None
+        
+        print("✅ Hash validation successful!")
+        return True, parts
+        
+    except Exception as e:
+        print(f"❌ Validation error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return False, None
+
 @app.route('/miniapp_login', methods=['POST'])
 def miniapp_login():
-    """Handle Telegram Mini App login"""
+    """Handle Telegram Mini App login with initData validation"""
     try:
-        data = request.get_json()
-        print(f"📥 Received Mini App login data: {data}")
+        request_data = request.get_json()
+        print(f"📥 Received Mini App login data")
         
-        telegram_id = str(data.get('id'))
-        first_name = data.get('first_name', 'User')
-        username = data.get('username', f"user_{telegram_id}")
+        initData = request_data.get('initData')
+        user_data = request_data.get('user', {})
         
-        print(f"🔍 Parsed: id={telegram_id}, first_name={first_name}, username={username}")
+        print(f"🔍 initData present: {bool(initData)}")
+        print(f"🔍 User data: {user_data}")
+        
+        if not initData:
+            print("❌ Missing initData")
+            return jsonify({'success': False, 'message': 'Missing initData from Telegram'}), 400
+        
+        # Validate initData using HMAC-SHA256
+        is_valid, parsed_data = validate_telegram_initData(initData, BOT_TOKEN)
+        
+        if not is_valid:
+            print("❌ initData validation failed")
+            return jsonify({'success': False, 'message': 'Failed to validate Telegram authentication'}), 401
+        
+        # Extract telegram_id from user data (user_data should be trusted at this point)
+        telegram_id = str(user_data.get('id'))
+        first_name = user_data.get('first_name', 'User')
+        username = user_data.get('username', f"user_{telegram_id}")
+        
+        print(f"👤 Authenticated user: id={telegram_id}, name={first_name}")
         
         if not telegram_id or telegram_id == 'None':
             print(f"❌ Invalid Telegram ID: {telegram_id}")
