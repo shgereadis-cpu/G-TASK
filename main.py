@@ -160,30 +160,36 @@ class DailyCheckIn(db.Model):
 def init_db():
     """የዳታቤዝ ሠንጠረዦችን ይፈጥራል እና ነባሪ አድሚን ያስገባል።"""
     with app.app_context():
-        # ሁሉንም ሞዴሎች በመጠቀም ሠንጠረዦችን ይፈጥራል
-        db.create_all() 
+        try:
+            # ሁሉንም ሞዴሎች በመጠቀም ሠንጠረዦችን ይፈጥራል
+            db.create_all()
+            print("✅ Database tables created successfully")
+        except Exception as e:
+            print(f"⚠️ Error creating tables: {str(e)}")
+            return
         
         # Add missing columns to payouts table
         from sqlalchemy import text, inspect
         try:
             inspector = inspect(db.engine)
-            payouts_columns = [col['name'] for col in inspector.get_columns('payouts')]
-            
-            columns_to_add = [
-                ('payment_method', "VARCHAR(50) DEFAULT 'Telebirr'"),
-                ('recipient_name', "VARCHAR(255) DEFAULT ''"),
-                ('payment_details', "VARCHAR(255) DEFAULT ''"),
-            ]
-            
-            for col_name, col_def in columns_to_add:
-                if col_name not in payouts_columns:
-                    try:
-                        db.session.execute(text(f'ALTER TABLE payouts ADD COLUMN {col_name} {col_def}'))
-                        db.session.commit()
-                        print(f"Added {col_name} column to payouts table")
-                    except Exception as e:
-                        db.session.rollback()
-                        print(f"Column {col_name} already exists or error: {str(e)[:100]}")
+            if 'payouts' in inspector.get_table_names():
+                payouts_columns = [col['name'] for col in inspector.get_columns('payouts')]
+                
+                columns_to_add = [
+                    ('payment_method', "VARCHAR(50) DEFAULT 'Telebirr'"),
+                    ('recipient_name', "VARCHAR(255) DEFAULT ''"),
+                    ('payment_details', "VARCHAR(255) DEFAULT ''"),
+                ]
+                
+                for col_name, col_def in columns_to_add:
+                    if col_name not in payouts_columns:
+                        try:
+                            db.session.execute(text(f'ALTER TABLE payouts ADD COLUMN {col_name} {col_def}'))
+                            db.session.commit()
+                            print(f"Added {col_name} column to payouts table")
+                        except Exception as e:
+                            db.session.rollback()
+                            print(f"Column {col_name} already exists or error: {str(e)[:100]}")
         except Exception as e:
             print(f"Error checking columns: {str(e)[:100]}")
         
@@ -319,23 +325,22 @@ def signup():
             flash('የይለፍ ቃል ቢያንስ 6 ፊደላት መሆን አለበት።', 'error')
         else:
             try:
-                with app.app_context():
-                    # Check if username already exists
-                    existing_user = User.query.filter_by(username=username).first()
-                    if existing_user:
-                        flash(f'የተጠቃሚ ስም "{username}" ቀድሞውኑ አለ። ሌላ ይሞክሩ።', 'error')
-                        return render_template('signup.html')
-                    
-                    password_hash = generate_password_hash(password)
-                    new_user = User(username=username, password_hash=password_hash)
-                    db.session.add(new_user)
-                    db.session.commit()
+                # Check if username already exists
+                existing_user = User.query.filter_by(username=username).first()
+                if existing_user:
+                    flash(f'የተጠቃሚ ስም "{username}" ቀድሞውኑ አለ። ሌላ ይሞክሩ።', 'error')
+                    return render_template('signup.html')
+                
+                password_hash = generate_password_hash(password)
+                new_user = User(username=username, password_hash=password_hash)
+                db.session.add(new_user)
+                db.session.commit()
                 flash('በተሳካ ሁኔታ ተመዝግበዋል! አሁን መግባት ይችላሉ።', 'success')
                 return redirect(url_for('login'))
             except Exception as e:
                 db.session.rollback()
                 print(f"❌ Signup error: {str(e)}")
-                flash(f'ስህተት: {str(e)[:50]}', 'error')
+                flash('የተጠቃሚ ስም ምዝገባ 失败 - እባክዎ ድጋሚ ሞክሩ።', 'error')
     return render_template('signup.html')
 
 @app.route('/login', methods=('GET', 'POST'))
@@ -344,8 +349,7 @@ def login():
         try:
             username = request.form.get('username', '').strip()
             password = request.form.get('password', '').strip()
-            with app.app_context():
-                user = User.query.filter_by(username=username).first()
+            user = User.query.filter_by(username=username).first()
             
             if user and check_password_hash(user.password_hash, password):
                 session['user_id'] = user.id
@@ -355,8 +359,9 @@ def login():
             else:
                 flash('ትክክለኛ ያልሆነ የተጠቃሚ ስም ወይም የይለፍ ቃል!', 'error')
         except Exception as e:
+            db.session.rollback()
             print(f"❌ Login error: {str(e)}")
-            flash(f'ሰርቨር ስህተት: {str(e)[:50]}', 'error')
+            flash('ሎግ-ኢን ስህተት - እባክዎ ድጋሚ ሞክሩ።', 'error')
     
     telegram_bot_username = os.environ.get('TELEGRAM_BOT_USERNAME')
     return render_template('login.html', telegram_bot_username=telegram_bot_username)
