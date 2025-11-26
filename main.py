@@ -555,93 +555,132 @@ def auto_register_telegram_user(telegram_user_id, first_name):
         print(f"❌ Error auto-registering user: {str(e)}")
         return None
 
-@app.route('/telegram/webhook', methods=['POST'])
-def telegram_webhook():
-    import json
-    
+def process_telegram_message(update_data):
+    """Process Telegram message and send reply"""
     TELEGRAM_BOT_TOKEN = BOT_TOKEN
     
+    print(f"🔍 DEBUG: Starting message processing, BOT_TOKEN exists: {bool(TELEGRAM_BOT_TOKEN)}")
+    
     if not TELEGRAM_BOT_TOKEN:
-        return jsonify({'status': 'error', 'message': 'Bot token not configured'}), 400
+        print("❌ ERROR: Bot token not configured!")
+        return False
     
     try:
-        update_data = request.get_json()
+        if not update_data or 'message' not in update_data:
+            print("⚠️ No message in update_data")
+            return True
         
-        if not update_data:
-            return jsonify({'status': 'ok'}), 200
+        message = update_data['message']
+        chat_id = message.get('chat', {}).get('id')
+        text = message.get('text', '')
+        user_info = message.get('from', {})
+        telegram_user_id = str(user_info.get('id'))
+        first_name = user_info.get('first_name', 'User')
         
-        if 'message' in update_data:
-            message = update_data['message']
-            chat_id = message.get('chat', {}).get('id')
-            text = message.get('text', '')
-            user_info = message.get('from', {})
-            telegram_user_id = str(user_info.get('id'))
-            first_name = user_info.get('first_name', 'User')
+        print(f"📱 Telegram message received: chat_id={chat_id}, user_id={telegram_user_id}, text='{text}'")
+        print(f"🔍 DEBUG: Full message object: {message}")
+        
+        if not chat_id:
+            print("❌ ERROR: chat_id is None or empty!")
+            return False
+        
+        message_text = None
+        
+        with app.app_context():
+            user = User.query.filter_by(telegram_id=telegram_user_id).first()
             
-            print(f"📱 Telegram message received: chat_id={chat_id}, user_id={telegram_user_id}, text={text}")
-            
-            with app.app_context():
-                user = User.query.filter_by(telegram_id=telegram_user_id).first()
-                
-                if text == '/start' or text == '/help':
-                    if not user:
-                        # Auto-register new user
-                        user = auto_register_telegram_user(telegram_user_id, first_name)
-                        if user:
-                            message_text = f"👋 እንኳን ደህና መጡ፣ {first_name}! \n\n" \
-                                          f"🎉 አሁን ወደ G-Task Manager ራሂ ተመዝግበዋል!\n\n" \
-                                          f"💼 ሥራ ወስደን ገንዘብ ይቀዩ - ብር 10 ለእያንዳንዱ ስራ!\n\n" \
-                                          f"🔐 <a href='https://g-task.onrender.com/telegram_auto_login/{generate_telegram_login_token(user)}'>🌐 ወደ ዌብሳይት ይሂዱ</a>"
-                        else:
-                            message_text = "⚠️ Registration failed. Please try again."
-                    else:
-                        message_text = f"👋 እንዴት ሁዋል፣ {first_name}!\n\n" \
-                                      f"💼 ፍጠን ስራ ውሰድ 및 ገንዘብ ያጀምሩ!\n\n" \
+            if text == '/start' or text == '/help':
+                if not user:
+                    # Auto-register new user
+                    user = auto_register_telegram_user(telegram_user_id, first_name)
+                    if user:
+                        message_text = f"👋 እንኳን ደህና መጡ፣ {first_name}! \n\n" \
+                                      f"🎉 አሁን ወደ G-Task Manager ራሂ ተመዝግበዋል!\n\n" \
+                                      f"💼 ሥራ ወስደን ገንዘብ ይቀዩ - ብር 10 ለእያንዳንዱ ስራ!\n\n" \
                                       f"🔐 <a href='https://g-task.onrender.com/telegram_auto_login/{generate_telegram_login_token(user)}'>🌐 ወደ ዌብሳይት ይሂዱ</a>"
-                
-                elif text == '/balance':
-                    if user:
-                        message_text = f"💰 የገንዘብ ሁኔታ:\n\n" \
-                                      f"📊 አጠቃላይ ገቢ: ብር {user.total_earned:.2f}\n" \
-                                      f"💵 ሊወጣ የሚችል: ብር {user.pending_payout:.2f}\n\n" \
-                                      f"🔐 <a href='https://g-task.onrender.com/telegram_auto_login/{generate_telegram_login_token(user)}'>ወደ ዌብሳይት ይሂዱ</a>"
                     else:
-                        message_text = "🔐 መለያ አልተገናኘም! /start ለመጀመር"
-                
-                elif text == '/tasks':
-                    if user:
-                        tasks = Task.query.filter_by(user_id=user.id).all()
-                        verified_count = len([t for t in tasks if t.status == 'VERIFIED'])
-                        pending_count = len([t for t in tasks if t.status == 'PENDING'])
-                        message_text = f"📋 የሥራ ሁኔታ:\n\n" \
-                                      f"✅ የተረጋገጡ: {verified_count}\n" \
-                                      f"⏳ በመጠበቅ ላይ: {pending_count}\n" \
-                                      f"💰 ብር {verified_count * PAYOUT_AMOUNT_PER_TASK:.2f} አገኘዋል\n\n" \
-                                      f"🔐 <a href='https://g-task.onrender.com/telegram_auto_login/{generate_telegram_login_token(user)}'>ወደ ዌብሳይት ይሂዱ</a>"
-                    else:
-                        message_text = "🔐 መለያ አልተገናኘም! /start ለመጀመር"
-                
+                        message_text = "⚠️ Registration failed. Please try again."
                 else:
-                    message_text = "❓ ያልታወቀ ትዕዛዝ። /help ለሚገቡ ትዕዛዞች"
-                
-                # Send message
-                api_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-                response = requests.post(api_url, data={
-                    'chat_id': chat_id,
-                    'text': message_text,
-                    'parse_mode': 'HTML'
-                })
-                
-                if response.status_code == 200:
-                    print(f"✅ Message sent to {telegram_user_id}")
+                    message_text = f"👋 እንዴት ሁዋል፣ {first_name}!\n\n" \
+                                  f"💼 ፍጠን ስራ ውሰድ 및 ገንዘብ ያጀምሩ!\n\n" \
+                                  f"🔐 <a href='https://g-task.onrender.com/telegram_auto_login/{generate_telegram_login_token(user)}'>🌐 ወደ ዌብሳይት ይሂዱ</a>"
+            
+            elif text == '/balance':
+                if user:
+                    message_text = f"💰 የገንዘብ ሁኔታ:\n\n" \
+                                  f"📊 አጠቃላይ ገቢ: ብር {user.total_earned:.2f}\n" \
+                                  f"💵 ሊወጣ የሚችል: ብር {user.pending_payout:.2f}\n\n" \
+                                  f"🔐 <a href='https://g-task.onrender.com/telegram_auto_login/{generate_telegram_login_token(user)}'>ወደ ዌብሳይት ይሂዱ</a>"
                 else:
-                    print(f"❌ Failed to send message: {response.text}")
+                    message_text = "🔐 መለያ አልተገናኘም! /start ለመጀመር"
+            
+            elif text == '/tasks':
+                if user:
+                    tasks = Task.query.filter_by(user_id=user.id).all()
+                    verified_count = len([t for t in tasks if t.status == 'VERIFIED'])
+                    pending_count = len([t for t in tasks if t.status == 'PENDING'])
+                    message_text = f"📋 የሥራ ሁኔታ:\n\n" \
+                                  f"✅ የተረጋገጡ: {verified_count}\n" \
+                                  f"⏳ በመጠበቅ ላይ: {pending_count}\n" \
+                                  f"💰 ብር {verified_count * PAYOUT_AMOUNT_PER_TASK:.2f} አገኘዋል\n\n" \
+                                  f"🔐 <a href='https://g-task.onrender.com/telegram_auto_login/{generate_telegram_login_token(user)}'>ወደ ዌብሳይት ይሂዱ</a>"
+                else:
+                    message_text = "🔐 መለያ አልተገናኘም! /start ለመጀመር"
+            
+            else:
+                message_text = "❓ ያልታወቀ ትዕዛዝ። /help ለሚገቡ ትዕዛዞች"
         
-        return jsonify({'status': 'ok'}), 200
+        if not message_text:
+            print("❌ ERROR: message_text is empty!")
+            return False
+        
+        print(f"🔍 DEBUG: Prepared message for chat_id {chat_id}: {message_text[:50]}...")
+        
+        # Send message to Telegram API
+        api_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+        print(f"🔍 DEBUG: API URL: {api_url[:50]}...")
+        
+        payload = {
+            'chat_id': chat_id,
+            'text': message_text,
+            'parse_mode': 'HTML'
+        }
+        print(f"🔍 DEBUG: Sending payload: {payload}")
+        
+        try:
+            response = requests.post(api_url, data=payload, timeout=10)
+            print(f"🔍 DEBUG: Response status: {response.status_code}")
+            print(f"🔍 DEBUG: Response text: {response.text}")
+            
+            if response.status_code == 200:
+                print(f"✅ Message sent to {telegram_user_id}")
+                return True
+            else:
+                print(f"❌ Failed to send message: {response.text}")
+                return False
+        except Exception as send_error:
+            print(f"❌ ERROR sending message: {str(send_error)}")
+            import traceback
+            traceback.print_exc()
+            return False
     
     except Exception as e:
+        print(f"❌ Error processing message: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return False
+
+@app.route('/telegram/webhook', methods=['POST'])
+def telegram_webhook():
+    """Telegram webhook handler (legacy route)"""
+    try:
+        update_data = request.get_json()
+        print(f"📥 Received at /telegram/webhook: {update_data}")
+        process_telegram_message(update_data)
+        return jsonify({'status': 'ok'}), 200
+    except Exception as e:
         print(f"❌ Telegram webhook error: {str(e)}")
-        return jsonify({'status': 'error', 'message': str(e)}), 500
+        return jsonify({'status': 'error'}), 500
 
 @app.route('/telegram/set-webhook', methods=['POST'])
 def set_telegram_webhook():
@@ -676,28 +715,29 @@ def set_telegram_webhook():
 
 @app.route('/webhook', methods=['POST'])
 def webhook_handler():
-    """Render-compatible Telegram webhook handler"""
+    """Render-compatible Telegram webhook handler (MAIN ENTRY POINT)"""
     try:
-        # ቴሌግራም የላከውን የ JSON ውሂብ ያግኙ
         data = request.get_json()
         
         if not data:
             print("⚠️ Empty webhook data received")
             return jsonify({'status': 'ok'}), 200 
         
-        print(f"📥 Webhook received from Telegram: {data}")
+        print(f"📥 Webhook received at /webhook from Telegram")
+        print(f"🔍 DEBUG: Raw data: {data}")
         
-        # አስፈላጊ ከሆነ: እዚህ ላይ የመልዕክት ማስኬጃ ኮድ ይገባል
-        # if 'message' in data:
-        #     handle_message(data['message'])
-
-        # ቴሌግራምን ማርካት ወሳኝ ነው! (Always return 200)
+        # Process the message
+        process_telegram_message(data)
+        
+        # Always return 200 to Telegram
         return jsonify({'status': 'ok'}), 200
         
     except Exception as e:
         print(f"❌ Webhook error: {str(e)}")
+        import traceback
+        traceback.print_exc()
         # Still return 200 to prevent Telegram from retrying
-        return jsonify({'status': 'error', 'message': str(e)}), 200
+        return jsonify({'status': 'ok'}), 200
 
 @app.route('/dashboard')
 def dashboard():
