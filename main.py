@@ -21,6 +21,10 @@ from dotenv import load_dotenv # ሚስጥሮችን ከአካባቢ ተለዋዋ
 load_dotenv() # በ Replit ላይ አውቶማቲክ ይሰራል
 app = Flask(__name__)
 
+# PRODUCTION MODE - Render only (disable debug on production)
+ENV = os.environ.get('ENV', 'production')
+app.debug = (ENV == 'development')
+
 # SECRET KEY - Render-compatible (from environment variables)
 app.secret_key = os.environ.get('SECRET_KEY', 'Kq7bYxZ_3u9sP2hG_vR4wF1mJ_tL5cY_8oE')
 
@@ -67,11 +71,12 @@ MIN_PAYOUT = 40.00
 PAYOUT_AMOUNT_PER_TASK = 10.00
 
 # ===== STARTUP DIAGNOSTICS =====
-print(f"🚀 Flask App Starting...")
+print(f"🚀 Flask App Starting on {'Render' if ENV == 'production' else 'Development'}...")
 print(f"✅ BOT_TOKEN configured: {bool(BOT_TOKEN)}")
-print(f"✅ BOT_TOKEN length: {len(BOT_TOKEN) if BOT_TOKEN else 0}")
+print(f"✅ BOT_TOKEN (@GTASKpro_bot): {TELEGRAM_BOT_USERNAME}")
 print(f"✅ WEBHOOK_URL: {WEBHOOK_URL}")
-print(f"✅ Database URL: {database_url[:30]}...")
+print(f"✅ Database: {'PostgreSQL (Production)' if 'postgresql' in database_url else 'SQLite (Dev)'}")
+print(f"✅ Environment: {ENV.upper()}")
 # ================================
 
 # --- 1. DATABASE MODELS (SQLAlchemy Models) ---

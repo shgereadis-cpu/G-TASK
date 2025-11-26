@@ -1,0 +1,60 @@
+🔧 RENDER ENVIRONMENT VARIABLES - COPY & PASTE
+
+Add these to Render Dashboard → Environment:
+
+==============================================
+BOT_TOKEN
+8535083603:AAGAFlbMYewLE_bv_GIlXJ1Jzd0epHY_7M0
+
+==============================================
+TELEGRAM_BOT_USERNAME
+GTASKpro_bot
+
+==============================================
+WEBHOOK_URL
+https://g-task.onrender.com/webhook
+
+==============================================
+DATABASE_URL
+(Get from your PostgreSQL service)
+Format: postgresql://user:password@host:5432/database?sslmode=require
+
+For Render PostgreSQL:
+1. Create new PostgreSQL service in Render
+2. Copy the "External Database URL"
+3. Paste it here
+
+For External Postgres (Neon, AWS RDS, etc.):
+1. Get connection string from provider
+2. Ensure it includes ?sslmode=require
+3. Paste here
+
+==============================================
+SECRET_KEY
+(Generate random - run this locally:)
+python -c "import secrets; print(secrets.token_urlsafe(32))"
+
+Example: FwU7vB3_pZ8mKq2xL9jC_tR5hY4nG1sD
+
+==============================================
+ADMIN_USERNAME
+Admin
+
+==============================================
+ADMIN_PASSWORD
+070781
+
+(IMPORTANT: Change this after first login in production!)
+
+==============================================
+
+BUILD COMMAND (Set in Render):
+pip install -r requirements.txt
+
+START COMMAND (Set in Render):
+gunicorn --bind=0.0.0.0:5000 --workers=2 main:app
+
+==============================================
+
+ALL VARIABLES ADDED? 
+✅ Then deploy!
