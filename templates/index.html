@@ -18,11 +18,8 @@
                 <i class="fas fa-play-circle"></i> ሥራዎን ይጀምሩ!
             </a>
         {% else %}
-            <a href="{{ url_for('signup') }}" class="btn success">
-                <i class="fas fa-user-plus"></i> ይመዝገቡና ይጀምሩ
-            </a>
-            <a href="{{ url_for('login') }}" class="btn primary">
-                <i class="fas fa-sign-in-alt"></i> ቀድሞ አለ? ይግቡ
+            <a href="{{ url_for('miniapp') }}" class="btn success">
+                <i class="fab fa-telegram"></i> በ Telegram ይጀምሩ
             </a>
         {% endif %}
     </div>
@@ -45,6 +42,11 @@
                 <i class="fas fa-check-circle"></i>
                 <h3>ቀላል ሥራ</h3>
                 <p>ምንም ልምድ ሳያስፈልግ ሁሉም ሥራዎች ቀላል እና ደረጃ በደረጃ  በደይቃዎች ይጠናቀቃል</p>
+            </div>
+            <div class="card">
+                <i class="fab fa-telegram"></i>
+                <h3>Telegram Integration</h3>
+                <p>በቀጥታ በ Telegram Mini App ውስጥ ሙሉ ሙሉ ይስሩ - ምንም መተግበሪያ downloading አያስፈልግም</p>
             </div>
         </div>
     </div>

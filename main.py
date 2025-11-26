@@ -315,57 +315,44 @@ def index():
         return redirect(url_for('dashboard'))
     return render_template('index.html')
 
-@app.route('/signup', methods=('GET', 'POST'))
-def signup():
-    if request.method == 'POST':
-        username = request.form.get('username', '').strip()
-        password = request.form.get('password', '').strip()
-        if not username or not password:
-            flash('እባክዎ ሁሉንም መስኮች ይሙሉ!', 'error')
-        elif len(password) < 6:
-            flash('የይለፍ ቃል ቢያንስ 6 ፊደላት መሆን አለበት።', 'error')
-        else:
-            try:
-                # Check if username already exists
-                existing_user = User.query.filter_by(username=username).first()
-                if existing_user:
-                    flash(f'የተጠቃሚ ስም "{username}" ቀድሞውኑ አለ። ሌላ ይሞክሩ።', 'error')
-                    return render_template('signup.html')
-                
-                password_hash = generate_password_hash(password)
-                new_user = User(username=username, password_hash=password_hash)
-                db.session.add(new_user)
-                db.session.commit()
-                flash('በተሳካ ሁኔታ ተመዝግበዋል! አሁን መግባት ይችላሉ።', 'success')
-                return redirect(url_for('login'))
-            except Exception as e:
-                db.session.rollback()
-                print(f"❌ Signup error: {str(e)}")
-                flash('የተጠቃሚ ስም ምዝገባ 失败 - እባክዎ ድጋሚ ሞክሩ።', 'error')
-    return render_template('signup.html')
+@app.route('/miniapp')
+def miniapp():
+    """Telegram Mini App authentication"""
+    if is_logged_in():
+        return redirect(url_for('dashboard'))
+    return render_template('miniapp.html')
 
-@app.route('/login', methods=('GET', 'POST'))
-def login():
-    if request.method == 'POST':
-        try:
-            username = request.form.get('username', '').strip()
-            password = request.form.get('password', '').strip()
-            user = User.query.filter_by(username=username).first()
-            
-            if user and check_password_hash(user.password_hash, password):
-                session['user_id'] = user.id
-                session['username'] = user.username
-                flash('በተሳካ ሁኔታ ገብተዋል!', 'success')
-                return redirect(url_for('dashboard'))
-            else:
-                flash('ትክክለኛ ያልሆነ የተጠቃሚ ስም ወይም የይለፍ ቃል!', 'error')
-        except Exception as e:
-            db.session.rollback()
-            print(f"❌ Login error: {str(e)}")
-            flash('ሎግ-ኢን ስህተት - እባክዎ ድጋሚ ሞክሩ።', 'error')
+@app.route('/miniapp_login', methods=['POST'])
+def miniapp_login():
+    """Handle Telegram Mini App login"""
+    try:
+        data = request.get_json()
+        telegram_id = str(data.get('id'))
+        first_name = data.get('first_name', 'User')
+        username = data.get('username', f"user_{telegram_id}")
+        
+        if not telegram_id:
+            return jsonify({'success': False, 'message': 'Invalid Telegram ID'}), 400
+        
+        # Auto-register or get existing user
+        user = User.query.filter_by(telegram_id=telegram_id).first()
+        
+        if not user:
+            # Auto-register new user
+            user = auto_register_telegram_user(telegram_id, first_name)
+            if not user:
+                return jsonify({'success': False, 'message': 'Registration failed'}), 500
+        
+        # Set session
+        session['user_id'] = user.id
+        session['username'] = user.username
+        
+        print(f"✅ Mini App login successful: {user.username} (Telegram ID: {telegram_id})")
+        return jsonify({'success': True, 'message': 'Logged in successfully', 'redirect': '/dashboard'}), 200
     
-    telegram_bot_username = os.environ.get('TELEGRAM_BOT_USERNAME')
-    return render_template('login.html', telegram_bot_username=telegram_bot_username)
+    except Exception as e:
+        print(f"❌ Mini App login error: {str(e)}")
+        return jsonify({'success': False, 'message': 'Login failed'}), 500
 
 @app.route('/logout')
 def logout():

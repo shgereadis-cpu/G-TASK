@@ -1,0 +1,72 @@
+{% include 'header.html' %}
+
+<div class="form-container" style="text-align: center; padding-top: 40px;">
+    <h2 style="font-size: 2em; margin-bottom: 20px;">
+        <i class="fas fa-rocket" style="color: var(--success-color);"></i> በ Telegram ይግቡ
+    </h2>
+    
+    <p style="color: var(--text-light); margin-bottom: 30px; font-size: 1.1em;">
+        G-Task Manager ማዕከል ወደ Telegram Mini App ተቀይሯል
+    </p>
+    
+    <div id="telegram-login-button" style="margin: 30px 0;">
+        <script async src="https://telegram.org/js/telegram-web-app.js"></script>
+        <button id="login-btn" class="btn success" style="font-size: 1.1em; padding: 15px 30px;">
+            <i class="fab fa-telegram"></i> በ Telegram Mini App ይጀምሩ
+        </button>
+    </div>
+    
+    <p style="color: #999; margin-top: 40px; font-size: 0.9em;">
+        ⚠️ ይህ ገጽ በ Telegram ውስጥ ብቻ ይሰራል
+    </p>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const TelegramWebApp = window.Telegram?.WebApp;
+    
+    if (TelegramWebApp) {
+        TelegramWebApp.ready();
+        
+        const loginBtn = document.getElementById('login-btn');
+        if (loginBtn) {
+            loginBtn.onclick = function() {
+                const user = TelegramWebApp.initData;
+                const userData = TelegramWebApp.initDataUnsafe?.user;
+                
+                if (userData) {
+                    console.log('User data:', userData);
+                    
+                    // Send to backend
+                    fetch('/miniapp_login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(userData)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.href = data.redirect || '/dashboard';
+                        } else {
+                            alert('Login failed: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Login error:', error);
+                        alert('Login failed: ' + error.message);
+                    });
+                } else {
+                    alert('Unable to get user data from Telegram');
+                }
+            };
+        }
+    } else {
+        document.getElementById('login-btn').disabled = true;
+        document.getElementById('login-btn').textContent = 'Telegram Mini App SDK not available';
+    }
+});
+</script>
+
+{% include 'footer.html' %}
