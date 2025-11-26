@@ -44,6 +44,14 @@ db = SQLAlchemy(app)
 MIN_PAYOUT = 40.00
 PAYOUT_AMOUNT_PER_TASK = 10.00
 
+# ===== STARTUP DIAGNOSTICS =====
+print(f"🚀 Flask App Starting...")
+print(f"✅ BOT_TOKEN configured: {bool(BOT_TOKEN)}")
+print(f"✅ BOT_TOKEN length: {len(BOT_TOKEN) if BOT_TOKEN else 0}")
+print(f"✅ WEBHOOK_URL: {WEBHOOK_URL}")
+print(f"✅ Database URL: {database_url[:30]}...")
+# ================================
+
 # --- 1. DATABASE MODELS (SQLAlchemy Models) ---
 
 class User(db.Model):
@@ -559,10 +567,17 @@ def process_telegram_message(update_data):
     """Process Telegram message and send reply"""
     TELEGRAM_BOT_TOKEN = BOT_TOKEN
     
-    print(f"🔍 DEBUG: Starting message processing, BOT_TOKEN exists: {bool(TELEGRAM_BOT_TOKEN)}")
+    print(f"\n{'='*60}")
+    print(f"🔍 PROCESS_TELEGRAM_MESSAGE called")
+    print(f"{'='*60}")
+    print(f"🔍 BOT_TOKEN value check:")
+    print(f"   - Is not None: {TELEGRAM_BOT_TOKEN is not None}")
+    print(f"   - Is not empty string: {bool(TELEGRAM_BOT_TOKEN)}")
+    print(f"   - Length: {len(TELEGRAM_BOT_TOKEN) if TELEGRAM_BOT_TOKEN else 0}")
+    print(f"   - First 20 chars: {TELEGRAM_BOT_TOKEN[:20] if TELEGRAM_BOT_TOKEN else 'N/A'}")
     
     if not TELEGRAM_BOT_TOKEN:
-        print("❌ ERROR: Bot token not configured!")
+        print("❌ CRITICAL ERROR: Bot token is empty or None!")
         return False
     
     try:
@@ -716,18 +731,29 @@ def set_telegram_webhook():
 @app.route('/webhook', methods=['POST'])
 def webhook_handler():
     """Render-compatible Telegram webhook handler (MAIN ENTRY POINT)"""
+    print(f"\n{'='*60}")
+    print(f"🔔 WEBHOOK RECEIVED - POST /webhook")
+    print(f"{'='*60}")
+    
     try:
+        print(f"🔍 Content-Type: {request.content_type}")
+        print(f"🔍 Request method: {request.method}")
+        
+        # Try to get JSON
         data = request.get_json()
+        
+        print(f"📥 JSON parsed successfully")
         
         if not data:
             print("⚠️ Empty webhook data received")
             return jsonify({'status': 'ok'}), 200 
         
-        print(f"📥 Webhook received at /webhook from Telegram")
-        print(f"🔍 DEBUG: Raw data: {data}")
+        print(f"📥 Webhook data keys: {list(data.keys())}")
+        print(f"🔍 BOT_TOKEN check: configured={bool(BOT_TOKEN)}, length={len(BOT_TOKEN) if BOT_TOKEN else 0}")
         
         # Process the message
-        process_telegram_message(data)
+        result = process_telegram_message(data)
+        print(f"✅ Message processing result: {result}")
         
         # Always return 200 to Telegram
         return jsonify({'status': 'ok'}), 200
