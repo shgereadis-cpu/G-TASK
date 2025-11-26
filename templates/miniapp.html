@@ -1,104 +1,272 @@
 {% include 'header.html' %}
 
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+
 <script async src="https://telegram.org/js/telegram-web-app.js"></script>
 
-<div class="form-container" style="text-align: center; padding-top: 40px;">
-    <h2 style="font-size: 2em; margin-bottom: 20px;">
-        <i class="fas fa-rocket" style="color: var(--success-color);"></i> በ Telegram ይግቡ
-    </h2>
-    
-    <p style="color: var(--text-light); margin-bottom: 30px; font-size: 1.1em;">
-        G-Task Manager ማዕከል ወደ Telegram Mini App ተቀይሯል
+<style>
+:root {
+  --tg-theme-bg-color: #ffffff;
+  --tg-theme-text-color: #000000;
+  --tg-theme-hint-color: #999999;
+  --tg-theme-link-color: #0088cc;
+  --tg-theme-button-color: #0088cc;
+  --tg-theme-button-text-color: #ffffff;
+  --tg-theme-secondary-bg-color: #f5f5f5;
+}
+
+body {
+  background: var(--tg-theme-bg-color);
+  color: var(--tg-theme-text-color);
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mini-app-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  background: linear-gradient(135deg, var(--tg-theme-bg-color), var(--tg-theme-secondary-bg-color));
+}
+
+.mini-app-content {
+  background: var(--tg-theme-bg-color);
+  border-radius: 16px;
+  padding: 32px 24px;
+  text-align: center;
+  max-width: 340px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mini-app-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  display: inline-block;
+}
+
+.mini-app-title {
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--tg-theme-text-color);
+}
+
+.mini-app-subtitle {
+  font-size: 16px;
+  color: var(--tg-theme-hint-color);
+  margin-bottom: 28px;
+  line-height: 1.4;
+}
+
+.mini-app-button {
+  background: var(--tg-theme-button-color);
+  color: var(--tg-theme-button-text-color);
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: opacity 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.mini-app-button:active {
+  opacity: 0.8;
+}
+
+.mini-app-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.mini-app-footer {
+  font-size: 12px;
+  color: var(--tg-theme-hint-color);
+  margin-top: 20px;
+}
+
+.loading-spinner {
+  display: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-spinner.active {
+  display: inline-block;
+}
+</style>
+
+<div class="mini-app-container">
+  <div class="mini-app-content">
+    <div class="mini-app-icon">🚀</div>
+    <h1 class="mini-app-title" id="app-title">በ Telegram ይግቡ</h1>
+    <p class="mini-app-subtitle" id="app-subtitle">
+      G-Task Manager ወደ Telegram Mini App ተቀይሯል
     </p>
     
-    <div id="telegram-login-button" style="margin: 30px 0;">
-        <button id="login-btn" class="btn success" style="font-size: 1.1em; padding: 15px 30px;">
-            <i class="fab fa-telegram"></i> በ Telegram Mini App ይጀምሩ
-        </button>
-    </div>
+    <button id="login-btn" class="mini-app-button">
+      <span class="loading-spinner" id="spinner"></span>
+      <span id="btn-text">📱 ወይም ይጀምሩ</span>
+    </button>
     
-    <p style="color: #999; margin-top: 40px; font-size: 0.9em;">
-        ⚠️ ይህ ገጽ በ Telegram ውስጥ ብቻ ይሰራል
+    <p class="mini-app-footer" id="app-footer">
+      ⚠️ ይህ ገጽ በ Telegram ውስጥ ብቻ ይሰራል
     </p>
+  </div>
 </div>
 
 <script>
-// Wait for Telegram WebApp SDK to be fully available
+// Apply Telegram theme colors dynamically
+function applyTelegramTheme() {
+  if (!window.Telegram?.WebApp) return;
+  
+  const themeParams = window.Telegram.WebApp.themeParams || {};
+  
+  // Set CSS variables from Telegram theme
+  const root = document.documentElement;
+  root.style.setProperty('--tg-theme-bg-color', themeParams.bg_color || '#ffffff');
+  root.style.setProperty('--tg-theme-text-color', themeParams.text_color || '#000000');
+  root.style.setProperty('--tg-theme-hint-color', themeParams.hint_color || '#999999');
+  root.style.setProperty('--tg-theme-link-color', themeParams.link_color || '#0088cc');
+  root.style.setProperty('--tg-theme-button-color', themeParams.button_color || '#0088cc');
+  root.style.setProperty('--tg-theme-button-text-color', themeParams.button_text_color || '#ffffff');
+  root.style.setProperty('--tg-theme-secondary-bg-color', themeParams.secondary_bg_color || '#f5f5f5');
+  
+  console.log('✅ Telegram theme applied');
+}
+
+// Wait for Telegram WebApp SDK
 function waitForTelegramWebApp(callback, attempt = 0) {
-    if (window.Telegram?.WebApp) {
-        callback();
-    } else if (attempt < 50) {
-        setTimeout(() => waitForTelegramWebApp(callback, attempt + 1), 100);
-    } else {
-        console.error('❌ Telegram WebApp SDK not available after 5 seconds');
-        document.getElementById('login-btn').disabled = true;
-        document.getElementById('login-btn').textContent = 'Telegram Mini App SDK not available';
-    }
+  if (window.Telegram?.WebApp) {
+    callback();
+  } else if (attempt < 50) {
+    setTimeout(() => waitForTelegramWebApp(callback, attempt + 1), 100);
+  } else {
+    console.error('❌ Telegram WebApp SDK not available');
+    document.getElementById('login-btn').disabled = true;
+    document.getElementById('btn-text').textContent = 'SDK not available';
+  }
 }
 
 waitForTelegramWebApp(function() {
-    const TelegramWebApp = window.Telegram.WebApp;
-    TelegramWebApp.ready();
-    
-    const loginBtn = document.getElementById('login-btn');
-    
-    loginBtn.onclick = function() {
-        try {
-            // Get the signed initData from Telegram
-            const initData = TelegramWebApp.initData;
-            const userData = TelegramWebApp.initDataUnsafe?.user;
-            
-            console.log('📱 Telegram initData:', initData ? 'Present' : 'Missing');
-            console.log('👤 Telegram user data:', userData);
-            
-            if (!initData) {
-                console.error('❌ No initData available');
-                alert('Unable to authenticate with Telegram. initData not found.');
-                return;
-            }
-            
-            if (!userData || !userData.id) {
-                console.error('❌ No user data available');
-                alert('Unable to get user data from Telegram');
-                return;
-            }
-            
-            console.log('✅ Sending signed initData to backend for validation');
-            
-            // Send SIGNED initData to backend (not just user data!)
-            fetch('/miniapp_login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    initData: initData,  // IMPORTANT: Send the signed string
-                    user: userData       // Also send user data for reference
-                })
-            })
-            .then(response => {
-                console.log('📦 Response status:', response.status);
-                return response.json();
-            })
-            .then(data => {
-                console.log('✅ Login response:', data);
-                if (data.success) {
-                    console.log('🎉 Login successful, redirecting to:', data.redirect);
-                    window.location.href = data.redirect || '/dashboard';
-                } else {
-                    console.error('❌ Login failed:', data.message);
-                    alert('Login failed: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('❌ Login error:', error);
-                alert('Login failed: ' + error.message);
-            });
-        } catch (e) {
-            console.error('❌ Exception:', e);
-            alert('Error: ' + e.message);
-        }
-    };
+  const TelegramWebApp = window.Telegram.WebApp;
+  
+  // Initialize and apply theme
+  TelegramWebApp.ready();
+  applyTelegramTheme();
+  
+  // Expand to fullscreen
+  TelegramWebApp.expand();
+  
+  // Show back button if available
+  if (TelegramWebApp.BackButton) {
+    TelegramWebApp.BackButton.show();
+    TelegramWebApp.BackButton.onClick(() => {
+      window.history.back();
+    });
+  }
+  
+  // Listen for theme changes
+  TelegramWebApp.onEvent('themeChanged', applyTelegramTheme);
+  
+  const loginBtn = document.getElementById('login-btn');
+  
+  loginBtn.onclick = async function() {
+    try {
+      // Get the signed initData from Telegram
+      const initData = TelegramWebApp.initData;
+      const userData = TelegramWebApp.initDataUnsafe?.user;
+      
+      console.log('📱 Telegram initData present:', !!initData);
+      console.log('👤 Telegram user data:', userData);
+      
+      if (!initData) {
+        console.error('❌ No initData available');
+        alert('Unable to authenticate with Telegram. initData not found.');
+        return;
+      }
+      
+      if (!userData || !userData.id) {
+        console.error('❌ No user data available');
+        alert('Unable to get user data from Telegram');
+        return;
+      }
+      
+      // Show loading state
+      loginBtn.disabled = true;
+      document.getElementById('spinner').classList.add('active');
+      document.getElementById('btn-text').textContent = 'በመደወል ላይ...';
+      
+      console.log('✅ Sending signed initData to backend for validation');
+      
+      // Send SIGNED initData to backend
+      const response = await fetch('/miniapp_login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          initData: initData,
+          user: userData
+        })
+      });
+      
+      const data = await response.json();
+      console.log('✅ Login response:', data);
+      
+      if (data.success) {
+        console.log('🎉 Login successful, redirecting to:', data.redirect);
+        window.location.href = data.redirect || '/dashboard';
+      } else {
+        console.error('❌ Login failed:', data.message);
+        alert('Login failed: ' + data.message);
+        
+        // Reset button
+        loginBtn.disabled = false;
+        document.getElementById('spinner').classList.remove('active');
+        document.getElementById('btn-text').textContent = '📱 ወይም ይጀምሩ';
+      }
+    } catch (error) {
+      console.error('❌ Login error:', error);
+      alert('Login failed: ' + error.message);
+      
+      // Reset button
+      loginBtn.disabled = false;
+      document.getElementById('spinner').classList.remove('active');
+      document.getElementById('btn-text').textContent = '📱 ወይም ይጀምሩ';
+    }
+  };
 });
 </script>
 

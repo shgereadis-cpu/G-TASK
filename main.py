@@ -350,9 +350,10 @@ def miniapp():
 
 def validate_telegram_initData(initData_string, bot_token):
     """
-    Validate Telegram Mini App initData using HMAC-SHA256
+    Validate Telegram Mini App initData using HMAC-SHA256 (Telegram spec)
     
     initData format: "user=%7B...%7D&chat_instance=...&hash=..."
+    Per Telegram docs: secret_key = HMAC-SHA256("WebAppData", BOT_TOKEN)
     """
     try:
         if not initData_string or not bot_token:
@@ -379,8 +380,9 @@ def validate_telegram_initData(initData_string, bot_token):
         
         print(f"🔍 Data check string:\n{data_check_string[:100]}...")
         
-        # Calculate secret key: SHA256(bot_token)
-        secret_key = hashlib.sha256(bot_token.encode()).digest()
+        # FIXED: Use Telegram's correct secret key derivation
+        # Per Telegram spec: secret_key = HMAC-SHA256("WebAppData", BOT_TOKEN)
+        secret_key = hmac.new(b"WebAppData", bot_token.encode(), hashlib.sha256).digest()
         
         # Calculate hash: HMAC-SHA256
         calculated_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
