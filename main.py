@@ -395,11 +395,11 @@ def telegram_auto_login(token):
         
         if not user:
             flash('🔐 የሎግইን ቊታ ተገኝቷል! እንደገና ወደ Telegram ሂድ።', 'error')
-            return redirect(url_for('login'))
+            return redirect(url_for('miniapp'))
         
         if user.telegram_token_expires and datetime.now() > user.telegram_token_expires:
             flash('🔐 የሎግይን ቊታ ጊዜው አልፍቷል! ወደ Telegram ወስደው ድጋሚ ሞክር።', 'error')
-            return redirect(url_for('login'))
+            return redirect(url_for('miniapp'))
         
         session['user_id'] = user.id
         session['username'] = user.username
@@ -417,13 +417,13 @@ def telegram_login_check():
     
     if not TELEGRAM_BOT_TOKEN:
         flash('Telegram login is not configured. Please contact administrator.', 'error')
-        return redirect(url_for('login'))
+        return redirect(url_for('miniapp'))
     
     auth_data = request.args.to_dict()
     
     if 'hash' not in auth_data:
         flash('የተሳሳተ Telegram ማረጋገጫ መረጃ!', 'error')
-        return redirect(url_for('login'))
+        return redirect(url_for('miniapp'))
     
     check_hash = auth_data.pop('hash')
     
@@ -434,21 +434,21 @@ def telegram_login_check():
     
     if calculated_hash != check_hash:
         flash('የተሳሳተ Telegram ማረጋገጫ!', 'error')
-        return redirect(url_for('login'))
+        return redirect(url_for('miniapp'))
     
     if 'auth_date' in auth_data:
         auth_date = int(auth_data['auth_date'])
         current_time = int(time.time())
         if current_time - auth_date > 86400:
             flash('Telegram login expired. Please try again.', 'error')
-            return redirect(url_for('login'))
+            return redirect(url_for('miniapp'))
     
     telegram_id = auth_data.get('id')
     telegram_username = auth_data.get('username', f"telegram_user_{telegram_id}")
     
     if not telegram_id:
         flash('የተሳሳተ Telegram መረጃ!', 'error')
-        return redirect(url_for('login'))
+        return redirect(url_for('miniapp'))
     
     with app.app_context():
         user = User.query.filter_by(telegram_id=telegram_id).first()
@@ -484,12 +484,12 @@ def telegram_login_check():
                     db.session.rollback()
                     if attempt == max_attempts - 1:
                         flash('የተጠቃሚ ስም ችግር አለ። እባክዎ እንደገና ይሞክሩ።', 'error')
-                        return redirect(url_for('login'))
+                        return redirect(url_for('miniapp'))
                 except Exception as e:
                     db.session.rollback()
                     print(f"Telegram login error for user {telegram_id}: {str(e)}")
                     flash(f'ስህተት ተከስቷል። እባክዎ እንደገና ይሞክሩ።', 'error')
-                    return redirect(url_for('login'))
+                    return redirect(url_for('miniapp'))
         
         session['user_id'] = user.id
         session['username'] = user.username
@@ -778,7 +778,7 @@ def dashboard():
 @app.route('/take_task', methods=['POST'])
 def take_task():
     if not is_logged_in():
-        return redirect(url_for('login'))
+        return redirect(url_for('miniapp'))
 
     with app.app_context():
         available_inventory = Inventory.query.filter_by(status='AVAILABLE').first()
@@ -798,7 +798,7 @@ def take_task():
 @app.route('/submit_task/<int:task_id>', methods=['POST'])
 def submit_task(task_id):
     if not is_logged_in():
-        return redirect(url_for('login'))
+        return redirect(url_for('miniapp'))
 
     with app.app_context():
         task = Task.query.filter_by(id=task_id, user_id=session['user_id']).first()
@@ -837,7 +837,7 @@ def payout_request():
 @app.route('/request_payout', methods=['POST'])
 def request_payout():
     if not is_logged_in():
-        return redirect(url_for('login'))
+        return redirect(url_for('miniapp'))
 
     with app.app_context():
         user = User.query.filter_by(id=session['user_id']).first()
@@ -876,7 +876,7 @@ def request_payout():
 @app.route('/view_ads')
 def view_ads():
     if not is_logged_in():
-        return redirect(url_for('login'))
+        return redirect(url_for('miniapp'))
     
     with app.app_context():
         user = User.query.filter_by(id=session['user_id']).first()
