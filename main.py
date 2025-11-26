@@ -761,7 +761,7 @@ def webhook_handler():
 @app.route('/dashboard')
 def dashboard():
     if not is_logged_in():
-        return redirect(url_for('login'))
+        return redirect(url_for('miniapp'))
     
     with app.app_context():
         user = User.query.filter_by(id=session['user_id']).first()
@@ -827,7 +827,7 @@ def submit_task(task_id):
 @app.route('/payout_request')
 def payout_request():
     if not is_logged_in():
-        return redirect(url_for('login'))
+        return redirect(url_for('miniapp'))
     
     with app.app_context():
         user = User.query.filter_by(id=session['user_id']).first()
