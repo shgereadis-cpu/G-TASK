@@ -64,3 +64,66 @@
 </div>
 
 {% include 'footer.html' %}
+
+<style>
+/* Mini App Mobile Optimization */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    h2, h4 {
+        font-size: 1.2em;
+    }
+    .card {
+        padding: 12px !important;
+        margin-bottom: 15px !important;
+    }
+    .card form {
+        padding: 10px;
+    }
+    .card label {
+        font-size: 0.9em;
+        margin-bottom: 5px;
+    }
+    .card input {
+        font-size: 14px;
+        padding: 8px;
+    }
+    div[style*="flex"] {
+        flex-direction: column !important;
+        gap: 10px !important;
+    }
+    .btn {
+        font-size: 0.9em;
+        padding: 10px 15px;
+    }
+    table {
+        font-size: 0.85em;
+    }
+    table thead,
+    table tbody {
+        display: block;
+    }
+    table thead {
+        display: none;
+    }
+    table tr {
+        display: block;
+        margin-bottom: 15px;
+        border: 1px solid var(--border-light);
+        border-radius: 8px;
+        padding: 10px;
+    }
+    table td {
+        display: block;
+        padding: 8px 0;
+        border: none;
+    }
+    table td:before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--primary-color);
+        margin-right: 10px;
+    }
+}
+</style>

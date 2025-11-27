@@ -109,3 +109,43 @@
 </div>
 
 {% include 'footer.html' %}
+
+<style>
+.payout-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+/* Mini App Mobile Optimization */
+@media (max-width: 768px) {
+    .payout-detail-card {
+        padding: 15px !important;
+        margin-bottom: 15px !important;
+    }
+    .payout-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+    .payout-grid label {
+        font-size: 0.9em !important;
+    }
+    .payout-grid p {
+        font-size: 0.95em !important;
+    }
+    .action-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .action-buttons form {
+        display: block !important;
+        width: 100%;
+    }
+    .btn-small {
+        width: 100%;
+    }
+}
+</style>
