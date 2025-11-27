@@ -884,21 +884,27 @@ def dashboard():
     if not is_logged_in():
         return redirect(url_for('miniapp'))
     
-    user = User.query.filter_by(id=session['user_id']).first()
-    
-    if user is None:
+    try:
+        user = User.query.filter_by(id=session['user_id']).first()
+        
+        if user is None:
+            session.pop('user_id', None)
+            return redirect(url_for('miniapp'))
+        
+        current_task = Task.query.filter_by(user_id=session['user_id'], status='PENDING').first()
+        available_task = Inventory.query.filter_by(status='AVAILABLE').first()
+        my_tasks = Task.query.filter_by(user_id=session['user_id']).all()
+        
+        return render_template('dashboard.html', 
+                             user=user, 
+                             current_task=current_task,
+                             available_task=available_task,
+                             my_tasks=my_tasks)
+                             
+    except Exception as e:
+        print(f"CRITICAL FLASK ERROR CAUGHT: {e}")
         session.pop('user_id', None)
         return redirect(url_for('miniapp'))
-    
-    current_task = Task.query.filter_by(user_id=session['user_id'], status='PENDING').first()
-    available_task = Inventory.query.filter_by(status='AVAILABLE').first()
-    my_tasks = Task.query.filter_by(user_id=session['user_id']).all()
-    
-    return render_template('dashboard.html', 
-                         user=user, 
-                         current_task=current_task,
-                         available_task=available_task,
-                         my_tasks=my_tasks)
 
 @app.route('/take_task', methods=['POST'])
 def take_task():
