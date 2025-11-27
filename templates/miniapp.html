@@ -1,6 +1,5 @@
 {% include 'header.html' %}
 
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
 
 <script async src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -16,13 +15,21 @@
   --tg-theme-secondary-bg-color: #f5f5f5;
 }
 
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  margin: 0;
+  padding: 0;
+}
+
 body {
   background: var(--tg-theme-bg-color);
   color: var(--tg-theme-text-color);
-  margin: 0;
-  padding: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   -webkit-font-smoothing: antialiased;
+  overflow-y: auto;
 }
 
 .mini-app-container {
@@ -30,19 +37,25 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  width: 100%;
+  height: 100%;
   min-height: 100vh;
-  padding: 20px;
+  padding: 12px;
   background: linear-gradient(135deg, var(--tg-theme-bg-color), var(--tg-theme-secondary-bg-color));
+  box-sizing: border-box;
+  overflow-y: auto;
 }
 
 .mini-app-content {
   background: var(--tg-theme-bg-color);
-  border-radius: 16px;
-  padding: 32px 24px;
+  border-radius: 12px;
+  padding: 20px 16px;
   text-align: center;
-  max-width: 340px;
+  width: 100%;
+  max-width: 320px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   animation: slideUp 0.5s ease-out;
+  box-sizing: border-box;
 }
 
 @keyframes slideUp {
@@ -166,7 +179,50 @@ function applyTelegramTheme() {
   console.log('✅ Telegram theme applied');
 }
 
-// Wait for Telegram WebApp SDK
+// Initialize Telegram Mini App with proper viewport handling
+function initializeTelegramMiniApp() {
+  if (window.Telegram?.WebApp) {
+    const TelegramWebApp = window.Telegram.WebApp;
+    
+    try {
+      // Initialize SDK
+      TelegramWebApp.ready();
+      
+      // Expand to fullscreen - CRITICAL for proper viewport
+      TelegramWebApp.expand();
+      
+      // Apply theme
+      applyTelegramTheme();
+      
+      // Listen for viewport changes
+      if (TelegramWebApp.onEvent) {
+        TelegramWebApp.onEvent('viewportChanged', function() {
+          TelegramWebApp.expand();
+          console.log('✅ Viewport changed - expanded to:', TelegramWebApp.viewportStableHeight);
+        });
+        
+        TelegramWebApp.onEvent('themeChanged', applyTelegramTheme);
+      }
+      
+      // Show back button
+      if (TelegramWebApp.BackButton) {
+        TelegramWebApp.BackButton.show();
+        TelegramWebApp.BackButton.onClick(() => {
+          window.history.back();
+        });
+      }
+      
+      console.log('✅ Telegram Mini App initialized');
+      console.log('📏 Viewport Height:', TelegramWebApp.viewportHeight);
+      console.log('📏 Viewport Stable Height:', TelegramWebApp.viewportStableHeight);
+      console.log('✅ Expanded:', TelegramWebApp.isExpanded);
+    } catch (error) {
+      console.error('⚠️ Error initializing Telegram WebApp:', error);
+    }
+  }
+}
+
+// Wait for Telegram WebApp SDK with retry logic
 function waitForTelegramWebApp(callback, attempt = 0) {
   if (window.Telegram?.WebApp) {
     callback();
@@ -174,31 +230,17 @@ function waitForTelegramWebApp(callback, attempt = 0) {
     setTimeout(() => waitForTelegramWebApp(callback, attempt + 1), 100);
   } else {
     console.error('❌ Telegram WebApp SDK not available');
-    document.getElementById('login-btn').disabled = true;
-    document.getElementById('btn-text').textContent = 'SDK not available';
+    if (document.getElementById('login-btn')) {
+      document.getElementById('login-btn').disabled = true;
+      document.getElementById('btn-text').textContent = 'SDK not available';
+    }
   }
 }
 
 waitForTelegramWebApp(function() {
+  initializeTelegramMiniApp();
+  
   const TelegramWebApp = window.Telegram.WebApp;
-  
-  // Initialize and apply theme
-  TelegramWebApp.ready();
-  applyTelegramTheme();
-  
-  // Expand to fullscreen
-  TelegramWebApp.expand();
-  
-  // Show back button if available
-  if (TelegramWebApp.BackButton) {
-    TelegramWebApp.BackButton.show();
-    TelegramWebApp.BackButton.onClick(() => {
-      window.history.back();
-    });
-  }
-  
-  // Listen for theme changes
-  TelegramWebApp.onEvent('themeChanged', applyTelegramTheme);
   
   const loginBtn = document.getElementById('login-btn');
   

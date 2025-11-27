@@ -706,17 +706,26 @@ function dailyCheckin() {
 
 /* Telegram Mini App Screen Fit Optimization */
 html, body {
-    height: 100%;
     width: 100%;
-    overflow-x: hidden; /* Prevent horizontal scroll */
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: none;
+}
+
+body {
+    margin: 0;
+    padding: 0;
 }
 
 .dashboard-grid {
     display: grid;
-    grid-template-columns: 300px 1fr;
-    gap: 30px;
-    margin-top: 30px;
-    height: auto; /* Dynamic height for content */
-    min-height: calc(100vh - 200px); /* Adjust based on header size */
+    grid-template-columns: 280px 1fr;
+    gap: 20px;
+    padding: 15px;
+    width: calc(100% - 30px);
+    height: auto;
+    min-height: 100%;
+    box-sizing: border-box;
 }
 </style>
