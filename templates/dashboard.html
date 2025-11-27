@@ -222,6 +222,56 @@
 {% include 'footer.html' %}
 
 <script>
+// Initialize Telegram Mini App and expand to fit screen after dashboard loads
+function initializeTelegramMiniApp() {
+    if (window.Telegram?.WebApp) {
+        const TelegramWebApp = window.Telegram.WebApp;
+        
+        // Initialize Telegram SDK
+        TelegramWebApp.ready();
+        
+        // Expand Mini App to fullscreen (ወሳኝ - Critical for screen fit)
+        TelegramWebApp.expand();
+        
+        // Enable viewport expansion
+        if (TelegramWebApp.viewportExpanded !== undefined) {
+            TelegramWebApp.viewportExpanded = true;
+        }
+        
+        // Listen for viewport changes
+        if (TelegramWebApp.onEvent) {
+            TelegramWebApp.onEvent('viewportChanged', function() {
+                TelegramWebApp.expand();
+            });
+        }
+        
+        console.log('✅ Telegram Mini App initialized and expanded to fit screen');
+    } else {
+        console.log('⚠️ Telegram WebApp SDK not available (running in browser)');
+    }
+}
+
+// Call initialization when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    initializeTelegramMiniApp();
+});
+
+// Also try on window load for safety
+window.addEventListener('load', function() {
+    initializeTelegramMiniApp();
+});
+
+// Wait for Telegram SDK if not immediately available
+function waitForTelegramAndExpand(attempt = 0) {
+    if (window.Telegram?.WebApp) {
+        initializeTelegramMiniApp();
+    } else if (attempt < 30) {
+        setTimeout(() => waitForTelegramAndExpand(attempt + 1), 100);
+    }
+}
+
+waitForTelegramAndExpand();
+
 function dailyCheckin() {
     fetch('{{ url_for("daily_checkin") }}', {
         method: 'POST',
@@ -642,6 +692,8 @@ function dailyCheckin() {
     border-radius: 12px;
     border-left: 5px solid var(--primary-color);
     margin-bottom: 25px;
+    height: auto; /* ተለዋዋጭ ቁመት - Dynamic height */
+    overflow: visible; /* ለ content overflow protection */
 }
 
 /* በሞባይል ሳይዝ ላይ ኅዳጉን መቀነስ */
@@ -650,5 +702,21 @@ function dailyCheckin() {
         padding: 15px;
         margin-bottom: 15px;
     }
+}
+
+/* Telegram Mini App Screen Fit Optimization */
+html, body {
+    height: 100%;
+    width: 100%;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 30px;
+    margin-top: 30px;
+    height: auto; /* Dynamic height for content */
+    min-height: calc(100vh - 200px); /* Adjust based on header size */
 }
 </style>
