@@ -1408,69 +1408,149 @@ header::after {
 
 @media (max-width: 480px) {
     header .logo {
-        font-size: 1.1em;
-    }
-
-    header .nav-link {
-        padding: 8px 10px;
-        font-size: 0.85em;
-    }
-
-    .hero h1 {
-        font-size: 1.4em;
-    }
-
-    .hero p {
-        font-size: 0.9em;
-    }
-
-    .hero {
-        padding: 40px 15px;
-    }
-
-    .btn {
-        padding: 10px 15px;
         font-size: 0.95em;
     }
 
-    .container {
-        margin: 15px auto;
+    header .nav-link {
+        padding: 6px 8px;
+        font-size: 0.75em;
     }
 
-    .card {
-        padding: 12px;
+    header {
+        padding: 10px 15px;
     }
 
-    .form-container {
-        padding: 15px;
-        margin: 20px 0;
-    }
-
-    .form-container h2 {
-        font-size: 1.4em;
-    }
-
-    .main-content h2 {
-        font-size: 1.3em;
-    }
-
-    .task-block h3 {
-        font-size: 1.1em;
-    }
-
-    .stat-number {
-        font-size: 1.8em;
-    }
-
-    .header-admin h1 {
-        font-size: 1.5em;
-    }
-
-    .feature-cards .card h3 {
+    .hero h1 {
         font-size: 1.2em;
     }
 
+    .hero p {
+        font-size: 0.8em;
+    }
+
+    .hero {
+        padding: 20px 12px;
+        margin-bottom: 20px;
+    }
+
+    .btn {
+        padding: 8px 12px;
+        font-size: 0.85em;
+    }
+
+    .btn-full {
+        padding: 8px 10px;
+    }
+
+    .container {
+        margin: 8px auto;
+        padding: 0 8px;
+    }
+
+    .card {
+        padding: 10px;
+        margin-bottom: 12px;
+        border-radius: 8px;
+    }
+
+    .form-container {
+        padding: 12px;
+        margin: 10px auto;
+        max-width: 100% !important;
+        border-radius: 10px;
+    }
+
+    .form-container h2 {
+        font-size: 1.2em;
+        margin-bottom: 12px;
+    }
+
+    .main-content h2 {
+        font-size: 1.1em;
+    }
+
+    .task-block h3 {
+        font-size: 1em;
+    }
+
+    .stat-number {
+        font-size: 1.5em;
+    }
+
+    .header-admin h1 {
+        font-size: 1.3em;
+    }
+
+    .feature-cards .card h3 {
+        font-size: 1em;
+    }
+
     .feature-cards .card i {
-        font-size: 2.5em;
+        font-size: 2em;
+    }
+
+    .feature-cards {
+        gap: 12px;
+    }
+
+    .feature-cards .card {
+        min-width: 200px;
+        width: 100%;
+    }
+
+    /* Mini App Container Optimization */
+    .main-content {
+        padding: 12px !important;
+    }
+
+    .sidebar-panel {
+        padding: 12px !important;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        margin-top: 8px;
+        margin-bottom: 8px;
+    }
+
+    .task-details {
+        margin: 8px 0;
+        font-size: 0.9em;
+    }
+
+    .balance-summary {
+        padding: 10px;
+    }
+
+    .quick-links a {
+        padding: 6px 0;
+        font-size: 0.9em;
+    }
+
+    table {
+        font-size: 0.85em;
+    }
+
+    table th, table td {
+        padding: 6px !important;
+    }
+
+    .featured-card-inner {
+        padding: 12px 15px !important;
+        gap: 10px !important;
+    }
+
+    input, textarea, select {
+        padding: 8px !important;
+        font-size: 14px !important;
+    }
+
+    label {
+        font-size: 0.9em;
+        margin-bottom: 4px;
+    }
+
+    .progress-bar {
+        height: 6px;
+        margin: 10px 0;
     }
 }
