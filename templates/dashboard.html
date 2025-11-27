@@ -219,6 +219,75 @@
     </section>
 </div>
 
+<!-- Fixed Bottom Button Bar -->
+<div class="dashboard-bottom-buttons">
+    <button class="bottom-btn balance-btn" onclick="toggleBalanceInfo()">
+        <i class="fas fa-wallet"></i>
+        <span class="btn-label">ሂሳብ</span>
+        <span class="btn-amount">ብር {{ "%.2f"|format(user.pending_payout) }}</span>
+    </button>
+    
+    <button class="bottom-btn help-btn" onclick="showHelp()">
+        <i class="fas fa-question-circle"></i>
+        <span class="btn-label">ሀልፕ</span>
+    </button>
+</div>
+
+<!-- Balance Info Modal -->
+<div id="balance-modal" class="modal-overlay" onclick="closeBalanceInfo()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h3><i class="fas fa-wallet"></i> የገንዘብ ሁኔታዎ</h3>
+        <div class="modal-info">
+            <div class="info-item">
+                <span>አጠቃላይ ገቢ:</span>
+                <strong>ብር {{ "%.2f"|format(user.total_earned) }}</strong>
+            </div>
+            <div class="info-item">
+                <span>ሊወጣ የሚችል ቀሪ ሂሳብ:</span>
+                <strong style="color: var(--success-color);">ብር {{ "%.2f"|format(user.pending_payout) }}</strong>
+            </div>
+            <div class="info-item info-note">
+                <i class="fas fa-info-circle"></i>
+                <span>ዝቅተኛ ወጣ ውጤት: <strong>ብር 40.00</strong></span>
+            </div>
+        </div>
+        <a href="{{ url_for('payout_request') }}" class="btn success btn-full">
+            <i class="fas fa-paper-plane"></i> ገንዘብ ይጠይቁ
+        </a>
+        <button class="btn secondary btn-full" style="margin-top: 8px;" onclick="closeBalanceInfo()">ዝጋ</button>
+    </div>
+</div>
+
+<!-- Help Modal -->
+<div id="help-modal" class="modal-overlay" onclick="closeHelp()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h3><i class="fas fa-question-circle"></i> ሀልፕ እና ጥያቄዎች</h3>
+        <div class="help-content">
+            <div class="help-item">
+                <h4><i class="fas fa-tasks"></i> ሥራ እንዴት ይሰራልሙ?</h4>
+                <p>✅ ከላይ ያለውን "ስራ ይውሰዱ" ቁልፍ ጠቅ ያድርጉ</p>
+                <p>✅ ጂሜል ስም እና ይለፍ ቃል ይቀበሉ</p>
+                <p>✅ ወደ Gmail.com ሂዱ እና አካውንት ይፍጠሩ</p>
+                <p>✅ ስክሪንሾት ይላኩ ወደ ቦትናው</p>
+            </div>
+            <div class="help-item">
+                <h4><i class="fas fa-money-bill"></i> ክፍያ እንዴት አገኙ?</h4>
+                <p>💰 በተለይ ስራ ብር 10 ታገኛላቹ</p>
+                <p>💰 ዕለታዊ ሪዋርድ ብር 0.20 ታገኛላቹ</p>
+                <p>💰 ዝቅተኛ ወጣ ውጤት ብር 40.00 ነው</p>
+            </div>
+            <div class="help-item">
+                <h4><i class="fas fa-credit-card"></i> ወጣ መጠየቅ?</h4>
+                <p>1️⃣ ሚዛን ቁልፍ ላይ ክሊክ ያድርጉ</p>
+                <p>2️⃣ "ገንዘብ ይጠይቁ" ራስጋ ጠቅ ያድርጉ</p>
+                <p>3️⃣ የክፍያ መረጃ ይሙሉ</p>
+                <p>4️⃣ ወስደው ሰልጥናል!</p>
+            </div>
+        </div>
+        <button class="btn secondary btn-full" onclick="closeHelp()">ዝጋ</button>
+    </div>
+</div>
+
 {% include 'footer.html' %}
 
 <script>
@@ -271,6 +340,33 @@ function waitForTelegramAndExpand(attempt = 0) {
 }
 
 waitForTelegramAndExpand();
+
+// Fixed bottom button functions
+function toggleBalanceInfo() {
+    const modal = document.getElementById('balance-modal');
+    modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+}
+
+function closeBalanceInfo() {
+    document.getElementById('balance-modal').style.display = 'none';
+}
+
+function showHelp() {
+    const modal = document.getElementById('help-modal');
+    modal.style.display = 'flex';
+}
+
+function closeHelp() {
+    document.getElementById('help-modal').style.display = 'none';
+}
+
+// Close modals when pressing Escape
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeBalanceInfo();
+        closeHelp();
+    }
+});
 
 function dailyCheckin() {
     fetch('{{ url_for("daily_checkin") }}', {
