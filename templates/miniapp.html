@@ -29,6 +29,18 @@ body {
   color: var(--tg-theme-text-color);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   -webkit-font-smoothing: antialiased;
+  /* 🛑 ወሳኝ ማስተካከያ፡ ከመጠን በላይ መሸብለልን አስወግድ */
+  overflow-y: hidden;
+}
+
+/* 🚩 ወሳኝ ማስተካከያ፡ #root ወይም App የሚቀመጥበት መያዣ ሙሉውን ቦታ ይወስዳል */
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  /* ዌብ አፑ ውስጥ ያለው ይዘት ከበዛ ብቻ እንዲሸበለል ይፈቅዳል */
   overflow-y: auto;
 }
 
@@ -140,8 +152,9 @@ body {
 }
 </style>
 
-<div class="mini-app-container">
-  <div class="mini-app-content">
+<div id="root">
+  <div class="mini-app-container">
+    <div class="mini-app-content">
     <div class="mini-app-icon">🚀</div>
     <h1 class="mini-app-title" id="app-title">በ Telegram ይግቡ</h1>
     <p class="mini-app-subtitle" id="app-subtitle">
@@ -156,6 +169,7 @@ body {
     <p class="mini-app-footer" id="app-footer">
       ⚠️ ይህ ገጽ በ Telegram ውስጥ ብቻ ይሰራል
     </p>
+  </div>
   </div>
 </div>
 
