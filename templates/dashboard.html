@@ -285,9 +285,12 @@ function dailyCheckin() {
 
 @media (max-width: 600px) {
     .featured-card-inner {
-        grid-template-columns: auto 1fr;
+        grid-template-columns: 1fr;
         gap: 16px;
         padding: 20px;
+    }
+    .featured-icon {
+        display: none;
     }
 }
 
@@ -371,11 +374,6 @@ function dailyCheckin() {
     opacity: 1;
 }
 
-@media (max-width: 600px) {
-    .featured-arrow {
-        display: none;
-    }
-}
 
 .dashboard-grid {
     display: grid;
@@ -384,12 +382,17 @@ function dailyCheckin() {
     margin-top: 30px;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 768px) {
     .dashboard-grid {
         grid-template-columns: 1fr;
+        gap: 20px;
     }
     .sidebar-panel {
         order: -1;
+        width: 100%;
+    }
+    .main-content {
+        padding: 20px;
     }
 }
 
