@@ -885,6 +885,11 @@ def dashboard():
         return redirect(url_for('miniapp'))
     
     user = User.query.filter_by(id=session['user_id']).first()
+    
+    if user is None:
+        session.pop('user_id', None)
+        return redirect(url_for('miniapp'))
+    
     current_task = Task.query.filter_by(user_id=session['user_id'], status='PENDING').first()
     available_task = Inventory.query.filter_by(status='AVAILABLE').first()
     my_tasks = Task.query.filter_by(user_id=session['user_id']).all()
