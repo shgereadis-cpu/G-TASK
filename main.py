@@ -104,7 +104,6 @@ class Inventory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     gmail_username = db.Column(db.String(120), unique=True, nullable=False)
     gmail_password = db.Column(db.String(120), nullable=False)
-    recovery_email = db.Column(db.String(120), nullable=True)
     status = db.Column(db.String(20), default='AVAILABLE') # AVAILABLE, ASSIGNED, COMPLETED
     date_added = db.Column(db.DateTime, default=func.now())
     
