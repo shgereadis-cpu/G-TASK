@@ -22,6 +22,8 @@
         --tg-theme-button-color: #0088cc;
         --tg-theme-button-text-color: #ffffff;
         --tg-theme-secondary-bg-color: #f5f5f5;
+        --header-height: 56px;
+        --bottom-nav-height: 60px;
     }
 
     html, body {
@@ -44,107 +46,168 @@
     #root {
         width: 100%;
         height: 100%;
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        overflow-y: auto;
-    }
-
-    .mini-app-container {
         display: flex;
         flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-        height: 100%;
-        min-height: 100vh;
-        padding: 12px;
-        background: linear-gradient(135deg, var(--tg-theme-bg-color), var(--tg-theme-secondary-bg-color));
-        box-sizing: border-box;
-        overflow-y: auto;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
     }
 
-    .mini-app-content {
+    /* ========== HEADER (FIXED) ========== */
+    .app-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: var(--header-height);
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        z-index: 100;
+        border-bottom: 2px solid var(--tg-theme-button-color);
+    }
+
+    .hamburger-btn {
+        background: none;
+        border: none;
+        color: #ffffff;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        transition: background 0.2s ease;
+    }
+
+    .hamburger-btn:active {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .app-title {
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        flex: 1;
+        text-align: center;
+    }
+
+    .header-spacer {
+        width: 40px;
+    }
+
+    /* ========== SCROLLABLE CONTENT AREA ========== */
+    .content-container {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+        margin-top: var(--header-height);
+        margin-bottom: var(--bottom-nav-height);
+        padding: 16px;
+        background: linear-gradient(135deg, var(--tg-theme-bg-color), var(--tg-theme-secondary-bg-color));
+    }
+
+    .content-card {
         background: var(--tg-theme-bg-color);
         border-radius: 12px;
-        padding: 20px 16px;
-        text-align: center;
-        width: 100%;
-        max-width: 320px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        animation: slideUp 0.5s ease-out;
-        box-sizing: border-box;
-    }
-
-    @keyframes slideUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .mini-app-icon {
-        font-size: 64px;
+        padding: 16px;
         margin-bottom: 16px;
-        display: inline-block;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e9ecef;
     }
 
-    .mini-app-title {
-        font-size: 28px;
-        font-weight: 600;
+    .content-card h2 {
+        font-size: 18px;
         margin-bottom: 12px;
         color: var(--tg-theme-text-color);
     }
 
-    .mini-app-subtitle {
-        font-size: 16px;
+    .content-card p {
+        font-size: 14px;
+        line-height: 1.6;
         color: var(--tg-theme-hint-color);
-        margin-bottom: 28px;
-        line-height: 1.4;
+        margin-bottom: 8px;
     }
 
-    .mini-app-button {
-        background: var(--tg-theme-button-color);
-        color: var(--tg-theme-button-text-color);
-        border: none;
-        border-radius: 8px;
-        padding: 12px 24px;
-        font-size: 16px;
-        font-weight: 600;
-        cursor: pointer;
-        width: 100%;
-        transition: opacity 0.2s ease;
+    .instructions-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .instructions-list li {
+        font-size: 14px;
+        line-height: 1.8;
+        color: var(--tg-theme-text-color);
+        margin-bottom: 10px;
+        padding-left: 24px;
+        position: relative;
+    }
+
+    .instructions-list li:before {
+        content: '✓';
+        position: absolute;
+        left: 0;
+        color: #00d97e;
+        font-weight: bold;
+    }
+
+    /* ========== BOTTOM NAVIGATION (FIXED) ========== */
+    .bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: var(--bottom-nav-height);
+        background: var(--tg-theme-bg-color);
+        border-top: 2px solid #e9ecef;
         display: flex;
+        justify-content: space-around;
+        align-items: center;
+        box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+        z-index: 100;
+    }
+
+    .nav-btn {
+        flex: 1;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 8px;
-    }
-
-    .mini-app-button:active {
-        opacity: 0.8;
-    }
-
-    .mini-app-button:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
-    .mini-app-footer {
+        background: none;
+        border: none;
+        cursor: pointer;
         font-size: 12px;
-        color: var(--tg-theme-hint-color);
-        margin-top: 20px;
+        color: var(--tg-theme-text-color);
+        transition: all 0.2s ease;
+        position: relative;
     }
 
+    .nav-btn:active {
+        background: rgba(0, 0, 0, 0.05);
+    }
+
+    .nav-btn.active {
+        color: var(--tg-theme-button-color);
+    }
+
+    .nav-btn i {
+        font-size: 20px;
+        margin-bottom: 4px;
+    }
+
+    /* ========== LOADING SPINNER ========== */
     .loading-spinner {
         display: none;
         width: 16px;
         height: 16px;
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        border-top-color: white;
+        border: 2px solid rgba(0, 0, 0, 0.2);
+        border-top-color: var(--tg-theme-button-color);
         border-radius: 50%;
         animation: spin 0.8s linear infinite;
     }
@@ -156,31 +219,100 @@
     .loading-spinner.active {
         display: inline-block;
     }
+
+    /* ========== SCROLLBAR STYLING ========== */
+    .content-container::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .content-container::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .content-container::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 2px;
+    }
+
+    .content-container::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 0, 0, 0.3);
+    }
     </style>
 </head>
 <body>
     <div id="root">
-        <div class="mini-app-container">
-            <div class="mini-app-content">
-                <div class="mini-app-icon">🚀</div>
-                <h1 class="mini-app-title" id="app-title">በ Telegram ይግቡ</h1>
-                <p class="mini-app-subtitle" id="app-subtitle">
-                    G-Task Manager ወደ Telegram Mini App ተቀይሯል
-                </p>
-                
-                <button id="login-btn" class="mini-app-button">
-                    <span class="loading-spinner" id="spinner"></span>
-                    <span id="btn-text">📱 ወይም ይጀምሩ</span>
-                </button>
-                
-                <p class="mini-app-footer" id="app-footer">
-                    ⚠️ ይህ ገጽ በ Telegram ውስጥ ብቻ ይሰራል
-                </p>
+        <!-- FIXED HEADER -->
+        <header class="app-header">
+            <button class="hamburger-btn" id="hamburger-btn">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="app-title">G-Task</div>
+            <div class="header-spacer"></div>
+        </header>
+
+        <!-- SCROLLABLE CONTENT AREA -->
+        <div class="content-container">
+            <div class="content-card">
+                <h2>📧 Gmail Account Setup</h2>
+                <p>Follow these instructions to complete your task:</p>
+                <ul class="instructions-list">
+                    <li>Open Gmail at gmail.com</li>
+                    <li>Create a new account with provided credentials</li>
+                    <li>Verify your email address</li>
+                    <li>Complete your profile information</li>
+                    <li>Take a screenshot of successful setup</li>
+                    <li>Submit the screenshot to verify completion</li>
+                </ul>
+            </div>
+
+            <div class="content-card">
+                <h2>💰 How You Earn</h2>
+                <p>Get paid for each completed task:</p>
+                <ul class="instructions-list">
+                    <li>Complete one task = ብር 10.00</li>
+                    <li>Daily check-in bonus = ብር 0.20</li>
+                    <li>Minimum payout = ብር 40.00</li>
+                    <li>Withdraw anytime when you reach minimum</li>
+                </ul>
+            </div>
+
+            <div class="content-card">
+                <h2>🎯 Getting Started</h2>
+                <p>Ready to start earning?</p>
+                <ul class="instructions-list">
+                    <li>Click "Tasks" in the bottom navigation</li>
+                    <li>Select an available task</li>
+                    <li>Follow the Gmail setup instructions</li>
+                    <li>Submit your completion proof</li>
+                    <li>Wait for admin verification</li>
+                    <li>Receive your ብር 10 reward!</li>
+                </ul>
             </div>
         </div>
+
+        <!-- FIXED BOTTOM NAVIGATION -->
+        <nav class="bottom-nav">
+            <button class="nav-btn active" id="nav-balance">
+                <i class="fas fa-wallet"></i>
+                <span>💰 Balance</span>
+            </button>
+            <button class="nav-btn" id="nav-tasks">
+                <i class="fas fa-tasks"></i>
+                <span>✅ Tasks</span>
+            </button>
+            <button class="nav-btn" id="nav-earn">
+                <i class="fas fa-money-bill"></i>
+                <span>💵 Earn</span>
+            </button>
+            <button class="nav-btn" id="nav-wallet">
+                <i class="fas fa-piggy-bank"></i>
+                <span>💎 Wallet</span>
+            </button>
+        </nav>
     </div>
 
     <script>
+    // ========== TELEGRAM SDK INITIALIZATION ==========
     function applyTelegramTheme() {
         if (!window.Telegram?.WebApp) return;
         
@@ -204,13 +336,13 @@
             
             try {
                 TelegramWebApp.ready();
-                TelegramWebApp.expand();
+                TelegramWebApp.expand(); // 🔴 CRITICAL: Expand to fullscreen
                 applyTelegramTheme();
                 
                 if (TelegramWebApp.onEvent) {
                     TelegramWebApp.onEvent('viewportChanged', function() {
                         TelegramWebApp.expand();
-                        console.log('✅ Viewport changed');
+                        console.log('✅ Viewport changed - expanded');
                     });
                     TelegramWebApp.onEvent('themeChanged', applyTelegramTheme);
                 }
@@ -221,6 +353,8 @@
                 }
                 
                 console.log('✅ Telegram Mini App initialized');
+                console.log('📏 Viewport Height:', TelegramWebApp.viewportHeight);
+                console.log('✅ Expanded:', TelegramWebApp.isExpanded);
             } catch (error) {
                 console.error('⚠️ Error initializing Telegram WebApp:', error);
             }
@@ -234,61 +368,28 @@
             setTimeout(() => waitForTelegramWebApp(callback, attempt + 1), 100);
         } else {
             console.error('❌ Telegram WebApp SDK not available');
-            if (document.getElementById('login-btn')) {
-                document.getElementById('login-btn').disabled = true;
-                document.getElementById('btn-text').textContent = 'SDK not available';
-            }
         }
     }
 
+    // ========== NAVIGATION ==========
+    const navBtns = document.querySelectorAll('.nav-btn');
+    
+    navBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            navBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+
+    // ========== HAMBURGER MENU ==========
+    document.getElementById('hamburger-btn').addEventListener('click', function() {
+        console.log('Menu clicked');
+        // Placeholder for menu functionality
+    });
+
+    // ========== INITIALIZE ON LOAD ==========
     waitForTelegramWebApp(function() {
         initializeTelegramMiniApp();
-        
-        const TelegramWebApp = window.Telegram.WebApp;
-        const loginBtn = document.getElementById('login-btn');
-        
-        loginBtn.onclick = async function() {
-            try {
-                const initData = TelegramWebApp.initData;
-                const userData = TelegramWebApp.initDataUnsafe?.user;
-                
-                if (!initData) {
-                    alert('Unable to authenticate with Telegram. initData not found.');
-                    return;
-                }
-                
-                if (!userData || !userData.id) {
-                    alert('Unable to get user data from Telegram');
-                    return;
-                }
-                
-                loginBtn.disabled = true;
-                document.getElementById('spinner').classList.add('active');
-                document.getElementById('btn-text').textContent = 'በመደወል ላይ...';
-                
-                const response = await fetch('/miniapp_login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ initData, user: userData })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    window.location.href = data.redirect || '/dashboard';
-                } else {
-                    alert('Login failed: ' + data.message);
-                    loginBtn.disabled = false;
-                    document.getElementById('spinner').classList.remove('active');
-                    document.getElementById('btn-text').textContent = '📱 ወይም ይጀምሩ';
-                }
-            } catch (error) {
-                alert('Login failed: ' + error.message);
-                loginBtn.disabled = false;
-                document.getElementById('spinner').classList.remove('active');
-                document.getElementById('btn-text').textContent = '📱 ወይም ይጀምሩ';
-            }
-        };
     });
     </script>
 </body>
