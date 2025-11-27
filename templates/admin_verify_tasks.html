@@ -166,3 +166,34 @@ code.value {
 
 .verification-screenshot:hover {
     transform: scale(1.02);
+}
+
+/* Mini App Mobile Optimization */
+@media (max-width: 768px) {
+    .admin-verify-container {
+        max-width: 100% !important;
+        margin: 15px auto;
+        padding: 0 10px;
+    }
+    .task-card {
+        padding: 15px;
+    }
+    .task-header {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .task-header span {
+        font-size: 0.85em;
+    }
+    .label {
+        min-width: auto;
+        display: block;
+        margin-bottom: 5px;
+    }
+    code.value {
+        font-size: 0.95em;
+    }
+    .verification-screenshot {
+        max-height: 250px;
+    }
+}
