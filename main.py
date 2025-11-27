@@ -905,6 +905,10 @@ def dashboard():
         session.pop('user_id', None)
         return redirect(url_for('miniapp'))
 
+@app.route('/change_password')
+def change_password():
+    return redirect(url_for('dashboard'))
+
 @app.route('/take_task', methods=['POST'])
 def take_task():
     if not is_logged_in():
