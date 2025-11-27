@@ -10,6 +10,7 @@ G-Task Manager is a **Telegram Mini App** for managing Gmail account creation ta
 - ✅ **Frontend**: Telegram Mini App (No traditional login/signup)
 - ✅ **Authentication**: Telegram Mini App SDK
 - ✅ **Webhook**: Active at /webhook endpoint
+- ✅ **Mini App Display**: Fixed - proper viewport handling, responsive containers
 
 ## 📋 Technology Stack
 - **Backend**: Flask 3.0+ with Gunicorn (Production WSGI)
@@ -24,7 +25,7 @@ User opens @GTASKpro_bot in Telegram
          ↓
   Mini App loads
          ↓
-  User clicks "በ Telegram ይጀምሩ"
+  User clicks "📱 ወይም ይጀምሩ"
          ↓
   Telegram SDK sends user data
          ↓
@@ -76,7 +77,7 @@ URL: https://g-task.onrender.com/webhook
 ## 💻 Routes & Endpoints
 
 ### Public Routes
-- `GET /` - Home page (shows "በ Telegram ይጀምሩ" button)
+- `GET /` - Home page (shows "📱 ወይም ይጀምሩ" button)
 - `GET /miniapp` - Telegram Mini App entry point
 - `POST /miniapp_login` - Mini App authentication handler
 - `POST /webhook` - Telegram webhook (receives bot messages)
@@ -95,6 +96,15 @@ URL: https://g-task.onrender.com/webhook
 - `POST /admin/upload_tasks` - Bulk upload tasks
 - `GET /admin/verify_tasks` - Verify completed tasks
 - `GET /admin/payouts` - Manage payout requests
+
+## 🤖 Telegram Bot Commands
+
+| Command | Description |
+|---------|-------------|
+| `/start` | ስራ ይጀምሩ (Begin working) - Opens Mini App |
+| `/balance` | ገንዘብ ሁኔታ (Check earnings) |
+| `/tasks` | የሥራ ሁኔታ (View task status) |
+| `/help` | ሀልፕ (Get help & instructions) |
 
 ## 🔐 Security Features
 
@@ -123,7 +133,6 @@ URL: https://g-task.onrender.com/webhook
 - id (PK)
 - gmail_username (unique)
 - gmail_password
-- recovery_email
 - status
 - date_added
 
@@ -148,7 +157,7 @@ URL: https://g-task.onrender.com/webhook
 - date_paid
 
 ## 💰 Payment Model
-- **Earn per task**: ბር 10.00
+- **Earn per task**: ብር 10.00
 - **Daily check-in**: ብር 0.20
 - **Ad rewards**: Variable
 - **Minimum payout**: ብር 40.00
@@ -172,7 +181,26 @@ URL: https://g-task.onrender.com/webhook
     └── style.css           # Styling with animations
 ```
 
-## 📝 Recent Changes (Production)
+## 📝 Recent Changes (Latest Session - Nov 27, 2025)
+
+### Mini App Display & UX Improvements
+- ✅ Fixed Telegram Mini App viewport handling with proper meta tags (`viewport-fit=cover`)
+- ✅ Implemented `viewportStableHeight` for consistent sizing across devices
+- ✅ Optimized CSS for overflow handling - removed distorted screen issues
+- ✅ Reduced container padding from 30px to 10px for compact Mini App display
+- ✅ Reduced card padding and margins for better mobile UX
+- ✅ Optimized font sizes across all breakpoints (mobile-first responsive design)
+- ✅ Fixed dashboard grid layout for Mini App with dynamic height handling
+- ✅ Implemented proper Telegram theme color handling with CSS variables
+- ✅ Added viewport change event listeners for dynamic expansion
+
+### Bot Commands & Features
+- ✅ Enhanced `/start` command with comprehensive welcome message
+- ✅ Added `/help` command with detailed instructions (in Amharic)
+- ✅ Bot displays work principles: ✅ Take tasks, 💰 Get paid, 📅 Daily rewards
+- ✅ All bot commands have proper error handling and user feedback
+
+### Previous Changes
 - ✅ Removed traditional login/signup (replaced with Mini App)
 - ✅ Updated bot to @GTASKpro_bot
 - ✅ Configured Telegram Mini App SDK
@@ -182,8 +210,8 @@ URL: https://g-task.onrender.com/webhook
 - ✅ Environment-based debug mode
 
 ## ✅ Production Readiness Checklist
-- [x] Telegram Mini App configured
-- [x] Webhook endpoints ready
+- [x] Telegram Mini App configured with proper viewport handling
+- [x] Webhook endpoints ready and tested
 - [x] Database SSL configured
 - [x] Gunicorn production server
 - [x] Environment variables documented
@@ -193,6 +221,8 @@ URL: https://g-task.onrender.com/webhook
 - [x] Admin panel fully functional
 - [x] Task management system
 - [x] Payout tracking
+- [x] Mini App display optimized for all screen sizes
+- [x] Bot commands fully functional (/start, /balance, /tasks, /help)
 
 ## 🎊 Deployment Status
 **PRODUCTION READY** ✅
